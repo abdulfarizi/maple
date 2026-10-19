@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#07070a">
+    <title>ᴍᴀᴘʟᴇ☆ | Digital Card</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" fetchpriority="high"
+          href="/.netlify/images?url=/142224.webp&w=240&fm=webp&q=80"
+          imagesrcset="/.netlify/images?url=/142224.webp&w=80&fm=webp&q=80 80w, /.netlify/images?url=/142224.webp&w=160&fm=webp&q=80 160w, /.netlify/images?url=/142224.webp&w=240&fm=webp&q=80 240w, /.netlify/images?url=/142224.webp&w=400&fm=webp&q=80 400w"
+          imagesizes="74px">
+    <!-- Icon font is non-critical: load it without blocking first paint -->
+    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #07070a;
+            --panel: rgba(255, 255, 255, 0.022);
+            --line: rgba(255, 255, 255, 0.08);
+            --line-strong: rgba(255, 255, 255, 0.16);
+            --text: #ededf0;
+            --muted: #7c7c86;
+            --dim: #4a4a52;
+            --accent: #ff5b2e;
+            --accent-2: #ffb02e;
+            --accent-soft: rgba(255, 91, 46, 0.12);
+            --mono: 'Geist Mono', ui-monospace, monospace;
+            --sans: 'Geist', system-ui, -apple-system, sans-serif;
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { background: var(--bg); }
+        body {
+            font-family: var(--sans); color: var(--text);
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; justify-content: center;
+            padding: max(24px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
+            -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        a { color: inherit; text-decoration: none; }
+        button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+        :focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+
+        /* ---------- Atmosphere ---------- */
+        .grid-bg {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            --grid:
+                linear-gradient(var(--line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse 75% 60% at 50% 20%, #000 10%, transparent 75%);
+            -webkit-mask-image: radial-gradient(ellipse 75% 60% at 50% 20%, #000 10%, transparent 75%);
+            opacity: 0.5; overflow: hidden;
+        }
+        /* Lines live on an oversized child that moves via transform, so the drift runs on the GPU without repainting the mask */
+        .grid-bg::before {
+            content: ''; position: absolute; inset: -48px 0 0 -48px;
+            background-image: var(--grid); background-size: 48px 48px;
+            will-change: transform;
+            animation: grid-drift 24s linear infinite;
+        }
+        @keyframes grid-drift { to { transform: translate3d(48px, 48px, 0); } }
+        .halo {
+            position: fixed; z-index: 0; pointer-events: none;
+            width: 560px; height: 560px; left: 50%; top: -280px; transform: translateX(-50%);
+            background: radial-gradient(circle, rgba(255, 91, 46, 0.2), transparent 65%);
+        }
+
+        /* ---------- Layout ---------- */
+        .shell {
+            position: relative; z-index: 1; width: 100%; max-width: 420px;
+            display: flex; flex-direction: column; gap: 22px;
+        }
+        .reveal { animation: rise 0.9s var(--ease) backwards; }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+        .panel {
+            position: relative; border-radius: 24px; padding: 14px;
+            background: var(--panel); border: 1px solid var(--line);
+        }
+        /* HUD corner brackets */
+        .panel::before {
+            content: ''; position: absolute; inset: -1px; border-radius: 24px; pointer-events: none;
+            background:
+                linear-gradient(var(--accent), var(--accent)) top left / 14px 1px,
+                linear-gradient(var(--accent), var(--accent)) top left / 1px 14px,
+                linear-gradient(var(--accent), var(--accent)) bottom right / 14px 1px,
+                linear-gradient(var(--accent), var(--accent)) bottom right / 1px 14px;
+            background-repeat: no-repeat; opacity: 0.7;
+        }
+
+        .section-label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
+            padding: 0 6px 10px;
+        }
+        .section-label b { font-weight: 400; color: var(--accent); }
+
+        /* ---------- Shared lively button ---------- */
+        .live {
+            position: relative; overflow: hidden; isolation: isolate;
+            border: 1px solid rgba(255, 91, 46, 0.3);
+            background: linear-gradient(120deg, var(--accent-soft), transparent 70%);
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s var(--ease);
+        }
+        .live::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 40%; left: -40%; z-index: -1; pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            animation: sweep 5s var(--ease) infinite var(--sweep-delay, 1.5s);
+        }
+        /* 375% of its own 40% width = travels from left:-40% to left:110% */
+        @keyframes sweep { 0% { transform: translateX(0); } 40%, 100% { transform: translateX(375%); } }
+        .live:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(255, 91, 46, 0.15), 0 10px 30px -12px rgba(255, 91, 46, 0.5);
+            transform: translateY(-1px);
+        }
+        .live:active { transform: scale(0.97); }
+
+        /* ---------- Support hero (first) ---------- */
+        @property --spin { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+        #wrapperFloatingBtn { display: none !important; }
+        .support {
+            margin-top: 16px; width: 100%; display: flex; flex-direction: column; gap: 18px;
+            padding: 20px; border-radius: 24px; border: 1px solid transparent;
+            background:
+                linear-gradient(140deg, rgba(255, 91, 46, 0.16), rgba(10, 10, 13, 0.96) 60%) padding-box,
+                conic-gradient(from var(--spin), var(--accent), transparent 30%, var(--accent-2) 50%, transparent 70%, var(--accent)) border-box;
+            animation: border-spin 6s linear infinite;
+        }
+        @keyframes border-spin { to { --spin: 360deg; } }
+        .support:hover { border-color: transparent; }
+        .support-top { display: flex; justify-content: space-between; align-items: center; }
+        .support-tag {
+            font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .support-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+        .support-coin {
+            width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 18px;
+            background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 70%); color: #fff;
+            box-shadow: 0 0 24px -4px rgba(255, 140, 46, 0.6);
+            animation: coin-flip 3s var(--ease) infinite;
+        }
+        @keyframes coin-flip { 0%, 65% { transform: rotateY(0); } 85%, 100% { transform: rotateY(360deg); } }
+        .support-title { display: block; font-size: 24px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
+        .support-title .hl { color: var(--accent); }
+        .support-desc { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); font-weight: 300; }
+        .support-bottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+        .support-via { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+        .support-cta {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+            padding: 11px 16px; border-radius: 999px; background: var(--accent); color: #fff;
+            transition: background 0.3s, color 0.3s, gap 0.3s var(--ease);
+        }
+        .support:hover .support-cta { background: var(--text); color: var(--bg); gap: 12px; }
+
+        .money { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+        .money span {
+            position: absolute; bottom: 18%; left: var(--x); opacity: 0;
+            font-family: var(--mono); font-size: var(--s, 13px); font-weight: 500; color: var(--accent-2);
+            animation: money-rise var(--d, 3.4s) var(--ease) infinite var(--delay, 0s);
+        }
+        @keyframes money-rise {
+            0% { opacity: 0; transform: translateY(0) rotate(0); }
+            15% { opacity: 0.85; }
+            100% { opacity: 0; transform: translateY(-90px) rotate(var(--r, 12deg)); }
+        }
+        .support:hover .money span { animation-duration: 1.7s; }
+        .money-burst {
+            position: fixed; pointer-events: none; z-index: 100; font-size: 18px;
+            animation: burst 0.9s var(--ease) forwards;
+        }
+        @keyframes burst { to { opacity: 0; transform: translate(var(--bx), var(--by)) rotate(var(--br)) scale(0.6); } }
+
+        .dot {
+            position: relative; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+        }
+        .dot::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50%; background: rgba(255, 91, 46, 0.55);
+            animation: ping 2.4s var(--ease) infinite;
+        }
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            80%, 100% { transform: scale(4); opacity: 0; }
+        }
+
+        /* ---------- Identity ---------- */
+        .banner { position: relative; height: 128px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); }
+        .banner video, .banner img { display: block; width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.85) contrast(1.1) brightness(0.7); }
+        .banner::after {
+            content: ''; position: absolute; inset: 0;
+            background:
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.25) 0 1px, transparent 1px 3px),
+                linear-gradient(to top, #0a0a0d, transparent 70%);
+        }
+        .banner-tag {
+            position: absolute; z-index: 1; top: 12px; left: 14px;
+            font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: rgba(255,255,255,0.7);
+        }
+        .identity { display: flex; align-items: flex-end; gap: 16px; margin-top: -48px; padding: 0 8px; position: relative; z-index: 2; }
+        .avatar { position: relative; width: 86px; height: 86px; flex-shrink: 0; border-radius: 50%; padding: 3px; background: #0a0a0d; }
+        .avatar::before {
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--accent), transparent 40%, transparent 60%, var(--accent));
+            animation: spin 6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .avatar-inner {
+            position: relative; width: 100%; height: 100%; border-radius: 50%;
+            overflow: hidden; background: #111; border: 3px solid #0a0a0d; display: grid; place-items: center;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar .initials { font-size: 28px; font-weight: 500; display: none; }
+        .name-block { padding-bottom: 6px; min-width: 0; }
+        .name { font-size: 32px; font-weight: 500; letter-spacing: 0.02em; line-height: 1; white-space: nowrap; }
+        .name .star { color: var(--accent); display: inline-block; animation: twinkle 3.5s var(--ease) infinite; }
+        @keyframes twinkle { 0%, 80%, 100% { transform: scale(1) rotate(0); } 90% { transform: scale(1.25) rotate(72deg); } }
+        .handle { margin-top: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+
+        .meta { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .meta div { padding: 12px 8px; }
+        .meta div + div { border-left: 1px solid var(--line); padding-left: 16px; }
+        .meta dt { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--dim); text-transform: uppercase; }
+        .meta dd { margin-top: 5px; font-size: 13px; }
+        .bio { margin-top: 14px; font-size: 14px; line-height: 1.65; color: var(--muted); font-weight: 300; padding: 0 8px; }
+
+        /* ---------- Actions ---------- */
+        .actions { margin-top: 16px; display: grid; grid-template-columns: 1fr auto auto; gap: 8px; }
+        .btn {
+            height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px;
+            font-size: 13px; font-weight: 500; letter-spacing: 0.01em; color: var(--text);
+        }
+        .btn i { color: var(--accent); display: inline-block; }
+        .btn-square { width: 50px; font-size: 14px; }
+
+        /* ---------- Channel tiles ---------- */
+        .links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .tile {
+            display: flex; align-items: center; justify-content: space-between; gap: 14px;
+            padding: 16px 18px; border-radius: 18px;
+        }
+        button.tile { width: 100%; }
+        .tile .left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+        .tile .idx { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 0.1em; width: 14px; }
+        .tile .badge {
+            position: relative; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+            background: var(--accent); color: #fff; font-size: 16px; flex-shrink: 0;
+            transition: transform 0.4s var(--ease);
+        }
+        .tile .badge i { display: inline-block; }
+        .tile:hover .badge { transform: rotate(-8deg) scale(1.06); }
+        .tile .label { font-size: 14px; font-weight: 500; }
+        .tile .sub { display: block; margin-top: 2px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+        .tile .cta {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+            padding: 8px 12px; border-radius: 999px; background: var(--text); color: var(--bg); flex-shrink: 0;
+            transition: background 0.3s, color 0.3s;
+        }
+        .tile:hover .cta { background: var(--accent); color: #fff; }
+
+        /* ---------- Per-button signature animations (subtle) ---------- */
+        /* Save — plus turns */
+        .fx-plus i { animation: plus-turn 4s var(--ease) infinite; }
+        @keyframes plus-turn { 0%, 75% { transform: rotate(0); } 90%, 100% { transform: rotate(180deg); } }
+
+        /* WhatsApp quick button — rings */
+        .fx-ring i { animation: ring 3.2s ease-in-out infinite; transform-origin: 50% 60%; }
+        @keyframes ring {
+            0%, 72%, 100% { transform: rotate(0); }
+            76% { transform: rotate(-14deg); } 80% { transform: rotate(12deg); }
+            84% { transform: rotate(-10deg); } 88% { transform: rotate(6deg); } 92% { transform: rotate(0); }
+        }
+
+        /* Copy — layers slide */
+        .fx-copy i { animation: copy-slide 3.6s var(--ease) infinite; }
+        @keyframes copy-slide {
+            0%, 70%, 100% { transform: translate(0, 0); text-shadow: none; }
+            82% { transform: translate(2px, -2px); text-shadow: -3px 3px 0 rgba(255, 91, 46, 0.35); }
+        }
+
+        /* WhatsApp — typing dots */
+        .fx-typing .badge::after {
+            content: ''; position: absolute; right: -5px; top: -5px; width: 18px; height: 10px; border-radius: 6px;
+            background:
+                radial-gradient(circle, var(--accent) 1.5px, transparent 2px) 3px 50% / 4px 4px no-repeat,
+                radial-gradient(circle, var(--accent) 1.5px, transparent 2px) 7px 50% / 4px 4px no-repeat,
+                radial-gradient(circle, var(--accent) 1.5px, transparent 2px) 11px 50% / 4px 4px no-repeat,
+                var(--text);
+            animation: typing 2.8s var(--ease) infinite;
+        }
+        @keyframes typing { 0%, 55%, 100% { opacity: 0; transform: scale(0.6); } 65%, 90% { opacity: 1; transform: scale(1); } }
+
+        /* Instagram — flash */
+        .fx-flash .badge::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: 0;
+            animation: flash 4.2s ease-out infinite;
+        }
+        @keyframes flash { 0%, 78%, 100% { opacity: 0; } 80% { opacity: 0.75; } }
+
+        /* TikTok — glitch */
+        .fx-glitch .badge i { animation: glitch 3.4s steps(1) infinite; }
+        @keyframes glitch {
+            0%, 86%, 100% { text-shadow: none; transform: none; }
+            88% { text-shadow: -2px 0 #25f4ee, 2px 0 #fe2c55; transform: translateX(1px); }
+            91% { text-shadow: 2px 0 #25f4ee, -2px 0 #fe2c55; transform: translateX(-1px); }
+            94% { text-shadow: -1px 0 #25f4ee, 1px 0 #fe2c55; transform: none; }
+        }
+
+        /* Roblox — controller wiggle */
+        .fx-wiggle .badge i { animation: wiggle 3.8s var(--ease) infinite; }
+        @keyframes wiggle {
+            0%, 74%, 100% { transform: translateY(0) rotate(0); }
+            80% { transform: translateY(-2px) rotate(-10deg); } 86% { transform: translateY(-2px) rotate(10deg); } 92% { transform: none; }
+        }
+
+        /* Discord — bounce */
+        .fx-bounce .badge i { animation: bounce 3s var(--ease) infinite; }
+        @keyframes bounce {
+            0%, 70%, 100% { transform: translateY(0) scale(1); }
+            78% { transform: translateY(-4px) scale(1.05, 0.95); } 86% { transform: translateY(0) scale(0.95, 1.05); } 92% { transform: scale(1); }
+        }
+
+        /* YouTube — live pulse ring */
+        .fx-pulse .badge::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit;
+            border: 1px solid var(--accent); animation: pulse-ring 2.6s var(--ease) infinite;
+        }
+        @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.45); opacity: 0; } }
+
+        /* Mobile Legends — shield clash */
+        .fx-clash .badge i { animation: clash 3.6s var(--ease) infinite; }
+        @keyframes clash {
+            0%, 72%, 100% { transform: scale(1) rotate(0); }
+            78% { transform: scale(1.18) rotate(-12deg); } 84% { transform: scale(0.94) rotate(8deg); } 90% { transform: scale(1); }
+        }
+
+        /* ---------- Footer ---------- */
+        footer {
+            display: flex; justify-content: space-between;
+            font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim);
+            padding: 0 6px;
+        }
+
+        /* ---------- Toast ---------- */
+        .toast {
+            position: fixed; z-index: 60; left: 50%; bottom: 28px;
+            transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+            padding: 10px 16px; border-radius: 999px; background: var(--text); color: var(--bg);
+            font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+            transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+        }
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        /* ---------- Top bar + language switch ---------- */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center; padding: 0 6px;
+            font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
+        }
+        .topbar b { font-weight: 400; color: var(--accent); }
+        .lang {
+            display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px;
+            border: 1px solid var(--line-strong); background: rgba(10, 10, 13, 0.7);
+        }
+        .lang i { color: var(--accent); font-size: 11px; display: grid; place-items: center; padding: 0 6px 0 8px; }
+        .lang button {
+            font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-align: center;
+            min-width: 38px; padding: 7px 10px; border-radius: 999px; color: var(--muted);
+            transition: background 0.25s, color 0.25s;
+        }
+        .lang button:hover { color: var(--text); }
+        .lang button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+        .col-links { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+
+        /* ---------- Desktop / PC ---------- */
+        @media (min-width: 960px) {
+            body { padding: 48px 40px; align-items: flex-start; }
+            .halo { width: 900px; height: 900px; top: -450px; }
+            .shell {
+                max-width: 1080px; display: grid; gap: 28px 32px; align-items: start;
+                grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+            }
+            .topbar, footer { grid-column: 1 / -1; font-size: 10px; }
+            .shell > .panel { padding: 18px; position: sticky; top: 32px; }
+            .banner { height: 168px; }
+            .identity { margin-top: -52px; }
+            .avatar { width: 96px; height: 96px; }
+            .name { font-size: 36px; }
+            .bio { font-size: 15px; }
+            .col-links { gap: 28px; }
+            .section-label { font-size: 10px; }
+            .links { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+            .links li { min-width: 0; }
+            .tile { height: 100%; padding: 18px; }
+            .tile .label { font-size: 15px; min-width: 0; }
+            .tile .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .tile .badge { width: 44px; height: 44px; font-size: 18px; }
+        }
+        @media (min-width: 960px) and (max-height: 820px) {
+            .shell > .panel { position: relative; top: auto; }
+        }
+        @media (min-width: 960px) and (max-width: 1120px) {
+            .links { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 360px) {
+            .name { font-size: 26px; }
+            .avatar { width: 74px; height: 74px; }
+            .support-title { display: block; font-size: 21px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .reveal { opacity: 1; transform: none; }
+            .money { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="halo"></div>
+
+    <div class="shell">
+        <header class="topbar reveal" style="animation-delay: 0.1s">
+            <span>ᴍᴀᴘʟᴇ☆ / <b data-i18n="card">Digital Card</b></span>
+            <div class="lang" role="group" aria-label="Language / Bahasa">
+                <i class="fa-solid fa-language" aria-hidden="true"></i>
+                <button type="button" data-lang="en" aria-pressed="true" title="English">EN</button>
+                <button type="button" data-lang="ms" aria-pressed="false" title="Bahasa Melayu">BM</button>
+            </div>
+        </header>
+
+        <section class="panel reveal" style="animation-delay: 0.2s">
+            <div class="banner">
+                <video id="banner-video" autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback width="480" height="128" aria-hidden="true">
+                    <source src="video.webm" type="video/webm">
+                </video>
+                <span class="banner-tag">ID / 001</span>
+            </div>
+
+            <div class="identity">
+                <div class="avatar">
+                    <div class="avatar-inner">
+                        <img src="/.netlify/images?url=/142224.webp&w=240&fm=webp&q=80"
+                             srcset="/.netlify/images?url=/142224.webp&w=80&fm=webp&q=80 80w, /.netlify/images?url=/142224.webp&w=160&fm=webp&q=80 160w, /.netlify/images?url=/142224.webp&w=240&fm=webp&q=80 240w, /.netlify/images?url=/142224.webp&w=400&fm=webp&q=80 400w"
+                             sizes="74px" width="74" height="74" fetchpriority="high" decoding="async" alt="ᴍᴀᴘʟᴇ☆" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span class="initials">M</span>
+                    </div>
+                </div>
+                <div class="name-block">
+                    <h1 class="name">ᴍᴀᴘʟᴇ<span class="star">☆</span></h1>
+                    <p class="handle" data-i18n="role">Digital Creator</p>
+                </div>
+            </div>
+
+            <dl class="meta">
+                <div><dt data-i18n="basedIn">Based in</dt><dd>Masai, Johor</dd></div>
+                <div><dt data-i18n="focus">Focus</dt><dd data-i18n="focusVal">Content &amp; Tech</dd></div>
+            </dl>
+
+            <p class="bio" data-i18n="bio">
+                Assalamualaikum &amp; hello. Welcome to my digital card — tap a link below to connect, or save my contact in one tap.
+            </p>
+
+            <div class="actions">
+                <button class="btn live fx-plus" style="--sweep-delay: 1.2s" onclick="downloadVCard()">
+                    <i class="fa-solid fa-plus"></i><span data-i18n="save">Save contact</span>
+                </button>
+                <a class="btn btn-square live fx-ring" style="--sweep-delay: 1.4s" href="https://wa.me/wzii1?text=Hi%20Maple!%20I%20just%20tapped%20your%20NFC%20card." data-wa target="_blank" rel="noopener noreferrer" title="WhatsApp" aria-label="WhatsApp">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </a>
+                <button class="btn btn-square live fx-copy" style="--sweep-delay: 1.6s" onclick="copyCurrentUrl()" title="Copy link" aria-label="Copy link" data-i18n-label="copyLink">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+            </div>
+
+            <button id="support-tile" class="support live" style="--sweep-delay: 1s" type="button" aria-label="Give support" data-i18n-label="supportAria">
+                <span class="money" aria-hidden="true">
+                    <span style="--x: 10%; --delay: 0s;   --r: -14deg">$</span>
+                    <span style="--x: 26%; --delay: 1.2s; --r: 10deg; --s: 11px">¢</span>
+                    <span style="--x: 44%; --delay: 0.6s; --r: -8deg; --s: 12px">$</span>
+                    <span style="--x: 62%; --delay: 1.9s; --r: 16deg">RM</span>
+                    <span style="--x: 78%; --delay: 0.9s; --r: -12deg; --s: 11px">$</span>
+                    <span style="--x: 90%; --delay: 2.4s; --r: 8deg; --s: 10px">¢</span>
+                </span>
+                <span class="support-top">
+                    <span class="support-tag"><span class="dot"></span><span data-i18n="supportTag">Support · 00</span></span>
+                    <span class="support-coin"><i class="fa-solid fa-coins"></i></span>
+                </span>
+                <span>
+                    <span class="support-title"><span data-i18n="supportTitle">Give Support to</span> <span class="hl">ᴍᴀᴘʟᴇ☆</span></span>
+                    <span class="support-desc" data-i18n="supportDesc">Enjoy the content? Fuel the next one with a small tip.</span>
+                </span>
+                <span class="support-bottom">
+                    <span class="support-via" data-i18n="supportVia">via SociaBuzz · wzii_</span>
+                    <span class="support-cta"><span data-i18n="supportCta">Give Support</span> <i class="fa-solid fa-arrow-right"></i></span>
+                </span>
+            </button>
+        </section>
+
+        <div class="col-links">
+        <section class="reveal" style="animation-delay: 0.25s">
+            <div class="section-label"><span data-i18n="gaming">Gaming</span><b>02</b></div>
+            <ul class="links">
+                <li>
+                    <a class="tile live fx-wiggle" style="--sweep-delay: 1.8s" href="https://www.roblox.com/share?code=4adad911d156734abe482fec0cb93fc7&type=Profile&source=ProfileShare&stamp=1792399648738" target="_blank" rel="noopener noreferrer">
+                        <span class="left">
+                            <span class="idx">01</span>
+                            <span class="badge"><i class="fa-solid fa-gamepad"></i></span>
+                            <span class="label">Roblox<span class="sub" data-i18n="robloxSub">Add me as a friend</span></span>
+                        </span>
+                        <span class="cta" data-i18n="add">Add</span>
+                    </a>
+                </li>
+                <li>
+                    <button id="mlbb-tile" class="tile live fx-clash" style="--sweep-delay: 2.05s" type="button" aria-label="Copy Mobile Legends ID 37704847 and open Mobile Legends" data-i18n-label="mlbbAria">
+                        <span class="left">
+                            <span class="idx">02</span>
+                            <span class="badge"><i class="fa-solid fa-shield-halved"></i></span>
+                            <span class="label">Mobile Legends<span class="sub">ID · 37704847</span></span>
+                        </span>
+                        <span class="cta" data-i18n="copyId">Copy ID</span>
+                    </button>
+                </li>
+            </ul>
+        </section>
+
+        <section class="reveal" style="animation-delay: 0.35s">
+            <div class="section-label"><span data-i18n="channels">Channels</span><b>05</b></div>
+            <ul class="links">
+                <li>
+                    <a class="tile live fx-pulse" style="--sweep-delay: 1.8s" href="https://youtube.com/@w._zii?sub_confirmation=1" target="_blank" rel="noopener noreferrer">
+                        <span class="left">
+                            <span class="idx">01</span>
+                            <span class="badge"><i class="fa-brands fa-youtube"></i></span>
+                            <span class="label">YouTube<span class="sub">ᴍᴀᴘʟᴇ☆ · @w._zii</span></span>
+                        </span>
+                        <span class="cta" data-i18n="subscribe">Subscribe</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="tile live fx-typing" style="--sweep-delay: 2.05s" href="https://wa.me/wzii1?text=Hi%20Maple!%20I%20just%20tapped%20your%20NFC%20card." data-wa target="_blank" rel="noopener noreferrer">
+                        <span class="left">
+                            <span class="idx">02</span>
+                            <span class="badge"><i class="fa-brands fa-whatsapp"></i></span>
+                            <span class="label">WhatsApp<span class="sub" data-i18n="messageMe">Message me</span></span>
+                        </span>
+                        <span class="cta" data-i18n="chat">Chat</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="tile live fx-flash" style="--sweep-delay: 2.3s" href="https://www.instagram.com/wziiii._?rpxt=MTBwZXdhZzI3bXI4OA==" target="_blank" rel="noopener noreferrer">
+                        <span class="left">
+                            <span class="idx">03</span>
+                            <span class="badge"><i class="fa-brands fa-instagram"></i></span>
+                            <span class="label">Instagram<span class="sub">@wziiii._</span></span>
+                        </span>
+                        <span class="cta" data-i18n="follow">Follow</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="tile live fx-glitch" style="--sweep-delay: 2.55s" href="https://www.tiktok.com/@wzii._?" target="_blank" rel="noopener noreferrer">
+                        <span class="left">
+                            <span class="idx">04</span>
+                            <span class="badge"><i class="fa-brands fa-tiktok"></i></span>
+                            <span class="label">TikTok<span class="sub">@wzii._</span></span>
+                        </span>
+                        <span class="cta" data-i18n="follow">Follow</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="tile live fx-bounce" style="--sweep-delay: 3.05s" href="https://discordapp.com/users/399869638093307904" target="_blank" rel="noopener noreferrer">
+                        <span class="left">
+                            <span class="idx">05</span>
+                            <span class="badge"><i class="fa-brands fa-discord"></i></span>
+                            <span class="label">Discord<span class="sub">ᴍᴀᴘʟᴇ☆</span></span>
+                        </span>
+                        <span class="cta" data-i18n="add">Add</span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+        </div>
+
+        <footer class="reveal" style="animation-delay: 0.45s">
+            <span data-i18n="footer">Tap · Scan · Connect</span>
+            <span>Johor, MY</span>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        const CONTACT = {
+            name: 'ᴍᴀᴘʟᴇ☆',
+            title: 'Digital Creator',
+            city: 'Masai',
+            region: 'Johor',
+            country: 'Malaysia',
+            whatsapp: 'https://wa.me/wzii1',
+            youtube: 'https://youtube.com/@w._zii',
+        };
+
+        // ---------- Language (EN / BM) ----------
+        const I18N = {
+            en: {
+                title: 'ᴍᴀᴘʟᴇ☆ | Digital Card',
+                card: 'Digital Card',
+                role: 'Digital Creator',
+                basedIn: 'Based in',
+                focus: 'Focus',
+                focusVal: 'Content & Tech',
+                bio: 'Assalamualaikum & hello. Welcome to my digital card — tap a link below to connect, or save my contact in one tap.',
+                save: 'Save contact',
+                copyLink: 'Copy link',
+                supportAria: 'Give support',
+                supportTag: 'Support · 00',
+                supportTitle: 'Give Support to',
+                supportDesc: 'Enjoy the content? Fuel the next one with a small tip.',
+                supportVia: 'via SociaBuzz · wzii_',
+                supportCta: 'Give Support',
+                gaming: 'Gaming',
+                robloxSub: 'Add me as a friend',
+                add: 'Add',
+                mlbbAria: 'Copy Mobile Legends ID 37704847 and open Mobile Legends',
+                copyId: 'Copy ID',
+                copied: 'Copied',
+                channels: 'Channels',
+                subscribe: 'Subscribe',
+                messageMe: 'Message me',
+                chat: 'Chat',
+                follow: 'Follow',
+                footer: 'Tap · Scan · Connect',
+                waText: 'Hi Maple! I just tapped your NFC card.',
+                toastSaved: 'Contact saved',
+                toastLink: 'Link copied',
+                toastLang: 'Language: English',
+                mlbbDesktop: (id) => `ID ${id} copied · open MLBB on your phone`,
+                mlbbOpening: (id) => `ID ${id} copied · opening Mobile Legends`,
+                mlbbId: (id) => `MLBB ID: ${id}`,
+                mlbbIdOpening: (id) => `MLBB ID: ${id} · opening app`,
+            },
+            ms: {
+                title: 'ᴍᴀᴘʟᴇ☆ | Kad Digital',
+                card: 'Kad Digital',
+                role: 'Pencipta Digital',
+                basedIn: 'Berasal dari',
+                focus: 'Fokus',
+                focusVal: 'Kandungan & Teknologi',
+                bio: 'Assalamualaikum & hai. Selamat datang ke kad digital saya — ketik pautan di bawah untuk berhubung, atau simpan kenalan saya dengan sekali ketik.',
+                save: 'Simpan kenalan',
+                copyLink: 'Salin pautan',
+                supportAria: 'Beri sokongan',
+                supportTag: 'Sokongan · 00',
+                supportTitle: 'Beri Sokongan kepada',
+                supportDesc: 'Suka kandungan ini? Sokong karya seterusnya dengan sedikit sumbangan.',
+                supportVia: 'melalui SociaBuzz · wzii_',
+                supportCta: 'Beri Sokongan',
+                gaming: 'Permainan',
+                robloxSub: 'Tambah saya sebagai rakan',
+                add: 'Tambah',
+                mlbbAria: 'Salin ID Mobile Legends 37704847 dan buka Mobile Legends',
+                copyId: 'Salin ID',
+                copied: 'Disalin',
+                channels: 'Saluran',
+                subscribe: 'Langgan',
+                messageMe: 'Hantar mesej',
+                chat: 'Sembang',
+                follow: 'Ikuti',
+                footer: 'Ketik · Imbas · Hubung',
+                waText: 'Hai Maple! Saya baru ketik kad NFC awak.',
+                toastSaved: 'Kenalan disimpan',
+                toastLink: 'Pautan disalin',
+                toastLang: 'Bahasa: Bahasa Melayu',
+                mlbbDesktop: (id) => `ID ${id} disalin · buka MLBB di telefon anda`,
+                mlbbOpening: (id) => `ID ${id} disalin · membuka Mobile Legends`,
+                mlbbId: (id) => `ID MLBB: ${id}`,
+                mlbbIdOpening: (id) => `ID MLBB: ${id} · membuka aplikasi`,
+            },
+        };
+        const LANG_KEY = 'maple-lang';
+        let lang = (() => {
+            try { const saved = localStorage.getItem(LANG_KEY); if (I18N[saved]) return saved; } catch {}
+            return /^(ms|id)\b/i.test(navigator.language || '') ? 'ms' : 'en';
+        })();
+        const t = (key) => I18N[lang][key];
+
+        function applyLang(next) {
+            lang = I18N[next] ? next : 'en';
+            document.documentElement.lang = lang;
+            document.title = t('title');
+            document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+            document.querySelectorAll('[data-i18n-label]').forEach((el) => {
+                el.setAttribute('aria-label', t(el.dataset.i18nLabel));
+                if (el.hasAttribute('title')) el.title = t(el.dataset.i18nLabel);
+            });
+            document.querySelectorAll('[data-wa]').forEach((el) => {
+                el.href = `${CONTACT.whatsapp}?text=${encodeURIComponent(t('waText'))}`;
+            });
+            document.querySelectorAll('.lang [data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+        }
+
+        document.querySelectorAll('.lang [data-lang]').forEach((b) => b.addEventListener('click', () => {
+            if (b.dataset.lang === lang) return;
+            applyLang(b.dataset.lang);
+            try { localStorage.setItem(LANG_KEY, lang); } catch {}
+            showToast(t('toastLang'));
+        }));
+        applyLang(lang);
+
+        function pageUrl() {
+            return window.location.href.split('#')[0];
+        }
+
+        function buildVCard() {
+            return [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                `FN:${CONTACT.name}`,
+                `N:;${CONTACT.name};;;`,
+                `TITLE:${CONTACT.title}`,
+                `ADR;TYPE=HOME:;;;${CONTACT.city};${CONTACT.region};;${CONTACT.country}`,
+                `URL:${pageUrl()}`,
+                `URL;TYPE=WhatsApp:${CONTACT.whatsapp}`,
+                `URL;TYPE=YouTube:${CONTACT.youtube}`,
+                'END:VCARD',
+            ].join('\r\n');
+        }
+
+        function downloadVCard() {
+            const blob = new Blob([buildVCard()], { type: 'text/vcard;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'maple.vcf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            showToast(t('toastSaved'));
+        }
+
+        async function copyCurrentUrl() {
+            try {
+                await navigator.clipboard.writeText(pageUrl());
+            } catch {
+                const input = document.createElement('input');
+                input.value = pageUrl();
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                input.remove();
+            }
+            showToast(t('toastLink'));
+        }
+
+        const MLBB = {
+            id: '37704847',
+            androidPackage: 'com.mobile.legends',
+            iosScheme: 'mobilelegends://',
+            appStore: 'https://apps.apple.com/app/id1160056295',
+            playStore: 'https://play.google.com/store/apps/details?id=com.mobile.legends',
+        };
+
+        function detectPlatform() {
+            const ua = navigator.userAgent || '';
+            // iPadOS 13+ reports itself as Mac; touch support gives it away
+            if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+            if (/Android/i.test(ua)) return 'android';
+            return 'desktop';
+        }
+
+        function copyText(text) {
+            // Start the copy synchronously inside the tap so iOS Safari keeps the user-gesture permission
+            const fallback = () => {
+                const input = document.createElement('textarea');
+                input.value = text;
+                input.setAttribute('readonly', '');
+                input.style.position = 'fixed';
+                input.style.opacity = '0';
+                document.body.appendChild(input);
+                input.select();
+                input.setSelectionRange(0, text.length);
+                let ok = false;
+                try { ok = document.execCommand('copy'); } catch {}
+                input.remove();
+                return ok;
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text).then(() => true, fallback);
+            }
+            return Promise.resolve(fallback());
+        }
+
+        function openMobileLegends(platform) {
+            if (platform === 'android') {
+                // Chrome/Samsung Internet launch the app by package, or fall back to the Play Store if it's missing
+                window.location.href = 'intent://#Intent;'
+                    + 'action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;'
+                    + `package=${MLBB.androidPackage};`
+                    + `S.browser_fallback_url=${encodeURIComponent(MLBB.playStore)};end`;
+                return;
+            }
+            if (platform === 'ios') {
+                // Try the app's URL scheme; if the page is still visible shortly after, the app isn't installed
+                let left = false;
+                const onHide = () => { if (document.hidden) left = true; };
+                document.addEventListener('visibilitychange', onHide);
+                window.addEventListener('pagehide', onHide);
+                window.location.href = MLBB.iosScheme;
+                setTimeout(() => {
+                    document.removeEventListener('visibilitychange', onHide);
+                    window.removeEventListener('pagehide', onHide);
+                    if (!left && !document.hidden) window.location.href = MLBB.appStore;
+                }, 1800);
+            }
+        }
+
+        document.getElementById('mlbb-tile').addEventListener('click', function () {
+            const platform = detectPlatform();
+            const cta = this.querySelector('.cta');
+            copyText(MLBB.id).then((ok) => {
+                cta.textContent = ok ? t('copied') : t('copyId');
+                setTimeout(() => { cta.textContent = t('copyId'); }, 2000);
+                if (platform === 'desktop') {
+                    showToast(ok ? t('mlbbDesktop')(MLBB.id) : t('mlbbId')(MLBB.id));
+                    return;
+                }
+                showToast(ok ? t('mlbbOpening')(MLBB.id) : t('mlbbIdOpening')(MLBB.id));
+                setTimeout(() => openMobileLegends(platform), 500);
+            });
+        });
+
+        // Banner video: only decode frames while it's on screen, and honour reduced motion
+        (function () {
+            const video = document.getElementById('banner-video');
+            if (!video) return;
+            // Browsers that can't play WebM (older iOS Safari) get the animated WebP version instead
+            const useFallback = () => {
+                if (!video.isConnected) return;
+                const img = document.createElement('img');
+                img.src = 'video.webp';
+                img.alt = '';
+                img.width = 480;
+                img.height = 128;
+                img.decoding = 'async';
+                img.setAttribute('aria-hidden', 'true');
+                video.replaceWith(img);
+            };
+            if (!video.canPlayType('video/webm')) { useFallback(); return; }
+            video.querySelector('source')?.addEventListener('error', useFallback);
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let visible = true;
+            const sync = () => {
+                if (reduce.matches || !visible || document.hidden) video.pause();
+                else video.play().catch(() => {});
+            };
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver((entries) => {
+                    visible = entries[0].isIntersecting;
+                    sync();
+                }).observe(video);
+            }
+            document.addEventListener('visibilitychange', sync);
+            reduce.addEventListener?.('change', sync);
+            sync();
+        })();
+
+        let toastTimer;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+    </script>
+    <!-- SociaBuzz support widget: loaded after page load, its own floating button is hidden and opened from the support card at the top of the page -->
+    <script>
+      window.addEventListener('load', function () {
+        var s = document.createElement('script');
+        s.src = 'https://storage.sociabuzz.com/storage/js/main/buttononwebsite/index.min.js';
+        s.async = true;
+        s.onload = function () {
+          if (!window.sbBoW) return;
+          sbBoW.draw("wzii_", "R2l2ZSBTdXBwb3J0", "position-bottom-right", "#cc0000", "#FFFFFF");
+        };
+        document.body.appendChild(s);
+      });
+
+      document.getElementById('support-tile').addEventListener('click', function (e) {
+        var glyphs = ['💸', '💰', '🪙', '💵'];
+        var r = this.getBoundingClientRect();
+        var x = e.clientX || r.left + r.width / 2, y = e.clientY || r.top + r.height / 2;
+        for (var i = 0; i < 10; i++) {
+          var g = document.createElement('span');
+          var a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 60;
+          g.className = 'money-burst';
+          g.textContent = glyphs[i % glyphs.length];
+          g.style.left = x + 'px';
+          g.style.top = y + 'px';
+          g.style.setProperty('--bx', Math.cos(a) * d + 'px');
+          g.style.setProperty('--by', Math.sin(a) * d - 30 + 'px');
+          g.style.setProperty('--br', (Math.random() * 80 - 40) + 'deg');
+          document.body.appendChild(g);
+          setTimeout(g.remove.bind(g), 900);
+        }
+        var open = document.getElementById('btnModal');
+        if (open) setTimeout(function () { open.click(); }, 350);
+      });
+    </script>
+</body>
+</html>
