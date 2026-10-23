@@ -1,0 +1,12 @@
+/* ───────── Maple ID · extra themes ─────────
+ * Shared by the home page, basic cards and the Star (owner) card.
+ * Each theme sets every variable the pages read, so they work everywhere. */
+[data-theme=maple]   {--accent:#ff6a3d;--accent-2:#ffb547;--maple-red:#e0342f;--soft:#ff6a3d24;--accent-soft:rgba(255,106,61,.13);--accent-glow:rgba(255,106,61,.45)}
+[data-theme=autumn]  {--accent:#f59e0b;--accent-2:#ef4444;--maple-red:#b45309;--soft:#f59e0b24;--accent-soft:rgba(245,158,11,.13);--accent-glow:rgba(245,158,11,.45)}
+[data-theme=sunset]  {--accent:#fb7185;--accent-2:#fbbf24;--maple-red:#e11d48;--soft:#fb718524;--accent-soft:rgba(251,113,133,.13);--accent-glow:rgba(251,113,133,.45)}
+[data-theme=crimson] {--accent:#ef4444;--accent-2:#f97316;--maple-red:#991b1b;--soft:#ef444424;--accent-soft:rgba(239,68,68,.13);--accent-glow:rgba(239,68,68,.45)}
+[data-theme=gold]    {--accent:#facc15;--accent-2:#f59e0b;--maple-red:#a16207;--soft:#facc1524;--accent-soft:rgba(250,204,21,.13);--accent-glow:rgba(250,204,21,.45)}
+[data-theme=forest]  {--accent:#84cc16;--accent-2:#16a34a;--maple-red:#3f6212;--soft:#84cc1624;--accent-soft:rgba(132,204,22,.13);--accent-glow:rgba(132,204,22,.45)}
+[data-theme=ocean]   {--accent:#3b82f6;--accent-2:#22d3ee;--maple-red:#1d4ed8;--soft:#3b82f624;--accent-soft:rgba(59,130,246,.13);--accent-glow:rgba(59,130,246,.45)}
+[data-theme=violet]  {--accent:#a855f7;--accent-2:#ec4899;--maple-red:#7e22ce;--soft:#a855f724;--accent-soft:rgba(168,85,247,.13);--accent-glow:rgba(168,85,247,.45)}
+[data-theme=mono]    {--accent:#e5e7eb;--accent-2:#9ca3af;--maple-red:#6b7280;--soft:#e5e7eb1f;--accent-soft:rgba(229,231,235,.11);--accent-glow:rgba(229,231,235,.3)}

@@ -190,3 +190,10 @@ main{position:relative;z-index:1}
   .fake-toast{animation:none;opacity:1}
   .hero-card{transform:none}
 }
+
+/* ───────── performance: no always-on repaint animations ───────── */
+.support{animation:none}
+.card-page>.support{animation:card-reveal .65s var(--ease) both}
+.idcard-banner:after{animation:none}
+.idcard-banner:hover:after{animation:banner-sweep 1.2s var(--ease) 1}
+@media (pointer:coarse){.grid-bg:before{animation:none}}
