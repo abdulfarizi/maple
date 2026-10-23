@@ -39,8 +39,8 @@
     'layout','accent','accent2','cardTag','statusText','statusMode','specs','footerText','bannerGray','bannerDim',
     'avatarShape','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid',
     'spotify','musicAuto','shopEnabled','shopTitle','shopNote','shopWhatsApp','currency','products',
-    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove'];
-  const BOOLS = ['showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','openGame','showLove'];
+    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass'];
+  const BOOLS = ['showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','openGame','showLove','liquidGlass'];
   const CURRENCIES = ['auto','MYR','SGD','IDR','BND','PHP','THB','USD'];
   const HEX_RE = /^#[0-9a-f]{6}$/i;
   const clampInt = (v, lo, hi, dflt) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt; };
@@ -108,7 +108,7 @@
   const DEFAULT_MAPLE = {
     name: 'ᴍᴀᴘʟᴇ☆', role: 'Digital Creator',
     bio: 'Assalamualaikum & hello. Welcome to my digital card — tap a link below to connect, or save my contact in one tap.',
-    country: 'Malaysia', city: 'Masai, Johor', avatar: '', banner: '', theme: 'flame',
+    country: 'Malaysia', city: 'Masai, Johor', avatar: '', banner: '', theme: 'maple',
     layout: 'star', cardTag: 'ID / 001', statusText: 'Coding Roblox Studio mini-games & Grinding MLBB',
     specs: [
       { label: 'PHONE', value: 'Xiaomi 15 Ultra' }, { label: 'TABLET', value: 'Xiaomi Pad 6S Pro 12.4' },
@@ -455,7 +455,6 @@
       for (const k of EDITABLE) if (body[k] !== undefined) merged[k] = body[k];
       merged.name = String(merged.name || '').trim().slice(0, 80) || 'Creator';
       cleanOptions(merged);
-      if (slug === 'maple') merged.layout = 'star';
       for (const k of ['avatar', 'banner']) {
         merged[k] = String(merged[k] || '').trim();
         if (merged[k] && (merged[k].length > 600000 || !MEDIA_RE.test(merged[k]))) {
@@ -492,7 +491,11 @@
     <script src="/assets/launch.js"></script>
     <script type="module" crossorigin src="/assets/index-maple1.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-bhqqsojp.css" />
-    <link rel="stylesheet" href="/assets/maple.css?v=1" />
+    <link rel="stylesheet" href="/assets/maple.css?v=2" />
+    <link rel="stylesheet" href="/assets/themes.css?v=1" />
+    <link rel="stylesheet" href="/assets/maple-theme.css?v=1" />
+    <link rel="stylesheet" href="/assets/glass.css?v=2" />
+    <script src="/assets/maplefx.js?v=1" defer></script>
     <script src="/assets/maple.js?v=1"></script>
   </head>
   <body>
