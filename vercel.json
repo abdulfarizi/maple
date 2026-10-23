@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/maple", "destination": "/owner/index.html" },
+    { "source": "/owner", "destination": "/owner/index.html" },
+    { "source": "/owner/", "destination": "/owner/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
