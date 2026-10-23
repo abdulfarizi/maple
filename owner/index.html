@@ -8,10 +8,10 @@
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Digital ID" />
+    <meta name="apple-mobile-web-app-title" content="Maple ID" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Digital Card</title>
-    <meta name="description" content="A Digital ID card.">
+    <title>Maple Card</title>
+    <meta name="description" content="A Maple ID card.">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -264,7 +264,7 @@
 
 <div class="shell" id="shell" hidden>
     <header class="topbar reveal">
-        <span><span id="top-name"></span> / <b data-i18n="card">Digital Card</b></span>
+        <span><span id="top-name"></span> / <b data-i18n="card">Maple Card</b></span>
         <div class="top-controls">
             <a id="owner-studio-btn" href="/studio" target="_top" class="owner-studio-badge"><i class="fa-solid fa-pen-to-square"></i> <span data-i18n="studio">Studio</span></a>
             <button type="button" id="music-btn" class="icon-pill" title="Lofi" aria-label="Toggle Lofi Beats"><i class="fa-solid fa-music"></i></button>
@@ -356,7 +356,7 @@
     </section>
 
     <a id="cta" class="cta-card live hidden" href="/#auth" target="_top">
-        <span><span class="cta-tag" data-i18n="ctaTag">Digital ID</span><span class="cta-title" data-i18n="ctaTitle"></span><span class="cta-desc" data-i18n="ctaDesc"></span></span>
+        <span><span class="cta-tag" data-i18n="ctaTag">Maple ID</span><span class="cta-title" data-i18n="ctaTitle"></span><span class="cta-desc" data-i18n="ctaDesc"></span></span>
         <span class="cta-btn"><span data-i18n="ctaBtn">Create yours</span> <i class="fa-solid fa-arrow-right"></i></span>
     </a>
 
@@ -365,7 +365,7 @@
 
 <div id="qr-modal" class="modal">
     <div class="modal-card">
-        <div class="modal-head"><span data-i18n="qrHead">Scan Digital Card</span><button type="button" class="x-btn" data-act="close-qr"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-head"><span data-i18n="qrHead">Scan Maple Card</span><button type="button" class="x-btn" data-act="close-qr"><i class="fa-solid fa-xmark"></i></button></div>
         <div style="width:206px; height:206px; margin:0 auto; padding:14px; border-radius:20px; background:#fff; display:grid; place-items:center;"><img id="qr-image" alt="QR" width="178" height="178" loading="lazy"></div>
         <h2 id="qr-name" style="margin-top:15px; font-size:18px; font-weight:500;"></h2>
         <p style="margin-top:4px; font-size:11.5px; color:var(--muted); font-family:var(--mono);" data-i18n="qrSub">Point your camera to open this card</p>
@@ -503,33 +503,33 @@
 
     // ---------- translations (interface only; your own text is shown as you wrote it) ----------
     const I18N = {
-        en: { card: 'Digital Card', studio: 'Studio', loading: 'Loading…', statusOnline: 'Online', statusOffline: 'Offline', basedIn: 'Based in', visits: 'Visits', localTime: 'Time',
-            chipGaming: 'Gaming', chipRig: 'Gear', copyAll: 'Copy All', save: 'Save contact', copyLink: 'Copy link', qrHead: 'Scan Digital Card', qrSub: 'Point your camera to open this card', shareBtn: 'Share Card',
+        en: { card: 'Maple Card', studio: 'Studio', loading: 'Loading…', statusOnline: 'Online', statusOffline: 'Offline', basedIn: 'Based in', visits: 'Visits', localTime: 'Time',
+            chipGaming: 'Gaming', chipRig: 'Gear', copyAll: 'Copy All', save: 'Save contact', copyLink: 'Copy link', qrHead: 'Scan Maple Card', qrSub: 'Point your camera to open this card', shareBtn: 'Share Card',
             supportTag: 'Support · 00', supportTitle: 'Give Support to', supportDesc: 'Enjoy the content? Fuel the next one with a small tip.', supportVia: '', supportCta: 'Give Support',
             gaming: 'Gaming', channels: 'Channels', subscribe: 'Subscribe', chat: 'Chat', follow: 'Follow', add: 'Add', open: 'Open', copyId: 'Copy ID', copied: 'Copied',
             footer: 'Tap · Scan · Connect', noteHead: 'Quick WhatsApp Note', notePlaceholder: 'Type your note…', noteSend: 'Send via WhatsApp', noteHi: 'Hi', noteDefault: 'I just tapped your card.',
             toastSaved: 'Contact saved', toastLink: 'Link copied', toastAll: 'All handles copied!', toastId: 'ID copied', toastLang: 'Language: English', toastTheme: 'Theme', toastLofiOn: 'Lofi Beats: ON 🎧', toastLofiOff: 'Lofi Beats: OFF', toastSfxOn: 'UI Sound: ON', toastSfxOff: 'UI Sound: OFF', toastReact: 'Reacted', toastReacted: 'You already reacted 🙂',
             toastLoved: 'Thanks for the love', toastLoved2: 'You already loved this card', tabLinks: 'Links', toastOpening: 'ID copied. Opening {game}…', mail: 'Email', call: 'Call', shopTitle: 'Shop', shopSeller: 'Seller', shopFoot: 'Tap Buy to chat with the seller on WhatsApp. Your order details are filled in for you.', buy: 'Buy', soldOut: 'Sold out',
-            buyHi: 'Hi {seller}! I’d like to buy:', buyPrice: 'Price', buyTotal: 'total', buyFrom: 'From your Digital ID card', toastPreviewBuy: 'Preview: Buy opens WhatsApp on the live card',
+            buyHi: 'Hi {seller}! I’d like to buy:', buyPrice: 'Price', buyTotal: 'total', buyFrom: 'From your Maple ID card', toastPreviewBuy: 'Preview: Buy opens WhatsApp on the live card',
             showTracks: 'Show tracks', hideTracks: 'Hide tracks',
             musicHead: 'Music', lofiPlay: 'Play lofi beats', lofiStop: 'Stop lofi beats', volume: 'Volume', mute: 'Mute', unmute: 'Unmute',
             spotifyHint: 'Tap ▶ in the player to start. Browsers don’t allow music to start by itself. Spotify’s own volume follows your device volume; the slider and mute control this card’s sounds and stop the player.',
             mutedNote: 'Muted. Tap the speaker to turn the sound back on.', toastMuted: 'Muted', toastUnmuted: 'Sound on',
-            ctaTag: 'Digital ID', ctaTitle: 'Want your own Digital ID?', ctaDesc: 'Claim your free link and build a card like this in minutes.', ctaBtn: 'Create yours',
+            ctaTag: 'Maple ID', ctaTitle: 'Want your own Maple ID?', ctaDesc: 'Claim your free link and build a card like this in minutes.', ctaBtn: 'Create yours',
             notFoundTitle: 'No card here yet', notFoundDesc: 'Nobody has claimed this link. It could be yours.', notFoundBtn: 'Claim it', errTitle: 'Couldn’t load this card', errDesc: 'Please try again in a moment.' },
-        ms: { card: 'Kad Digital', studio: 'Studio', loading: 'Memuatkan…', statusOnline: 'Aktif', statusOffline: 'Luar talian', basedIn: 'Berasal dari', visits: 'Lawatan', localTime: 'Waktu',
-            chipGaming: 'Permainan', chipRig: 'Peralatan', copyAll: 'Salin Semua', save: 'Simpan kenalan', copyLink: 'Salin pautan', qrHead: 'Imbas Kad Digital', qrSub: 'Halakan kamera anda untuk membuka kad ini', shareBtn: 'Kongsi Kad',
+        ms: { card: 'Kad Maple', studio: 'Studio', loading: 'Memuatkan…', statusOnline: 'Aktif', statusOffline: 'Luar talian', basedIn: 'Berasal dari', visits: 'Lawatan', localTime: 'Waktu',
+            chipGaming: 'Permainan', chipRig: 'Peralatan', copyAll: 'Salin Semua', save: 'Simpan kenalan', copyLink: 'Salin pautan', qrHead: 'Imbas Kad Maple', qrSub: 'Halakan kamera anda untuk membuka kad ini', shareBtn: 'Kongsi Kad',
             supportTag: 'Sokongan · 00', supportTitle: 'Beri Sokongan kepada', supportDesc: 'Suka kandungan ini? Sokong karya seterusnya dengan sedikit sumbangan.', supportVia: 'melalui SociaBuzz', supportCta: 'Beri Sokongan',
             gaming: 'Permainan', channels: 'Saluran', subscribe: 'Langgan', chat: 'Sembang', follow: 'Ikuti', add: 'Tambah', open: 'Buka', copyId: 'Salin ID', copied: 'Disalin',
             footer: 'Ketik · Imbas · Hubung', noteHead: 'Nota WhatsApp Pantas', notePlaceholder: 'Taip nota anda…', noteSend: 'Hantar melalui WhatsApp', noteHi: 'Hai', noteDefault: 'Saya baru mengetik kad anda.',
             toastSaved: 'Kenalan disimpan', toastLink: 'Pautan disalin', toastAll: 'Semua nama pengguna disalin!', toastId: 'ID disalin', toastLang: 'Bahasa: Bahasa Melayu', toastTheme: 'Tema', toastLofiOn: 'Lofi Beats: HIDUP 🎧', toastLofiOff: 'Lofi Beats: MATI', toastSfxOn: 'Bunyi UI: HIDUP', toastSfxOff: 'Bunyi UI: MATI', toastReact: 'Bertindak balas', toastReacted: 'Anda sudah bertindak balas 🙂',
             toastLoved: 'Terima kasih atas sokongan', toastLoved2: 'Anda sudah menyukai kad ini', tabLinks: 'Pautan', toastOpening: 'ID disalin. Membuka {game}…', mail: 'E-mel', call: 'Hubungi', shopTitle: 'Kedai', shopSeller: 'Penjual', shopFoot: 'Ketik Beli untuk bersembang dengan penjual di WhatsApp. Butiran pesanan diisi untuk anda.', buy: 'Beli', soldOut: 'Habis dijual',
-            buyHi: 'Hai {seller}! Saya ingin membeli:', buyPrice: 'Harga', buyTotal: 'jumlah', buyFrom: 'Dari kad Digital ID anda', toastPreviewBuy: 'Pratonton: Beli membuka WhatsApp pada kad sebenar',
+            buyHi: 'Hai {seller}! Saya ingin membeli:', buyPrice: 'Harga', buyTotal: 'jumlah', buyFrom: 'Dari kad Maple ID anda', toastPreviewBuy: 'Pratonton: Beli membuka WhatsApp pada kad sebenar',
             showTracks: 'Papar lagu', hideTracks: 'Sembunyi lagu',
             musicHead: 'Muzik', lofiPlay: 'Main lofi beats', lofiStop: 'Henti lofi beats', volume: 'Kelantangan', mute: 'Senyap', unmute: 'Buka bunyi',
             spotifyHint: 'Ketik ▶ pada pemain untuk mula. Pelayar tidak membenarkan muzik bermula sendiri. Kelantangan Spotify mengikut kelantangan peranti anda; peluncur dan butang senyap mengawal bunyi kad ini dan menghentikan pemain.',
             mutedNote: 'Senyap. Ketik pembesar suara untuk buka bunyi.', toastMuted: 'Senyap', toastUnmuted: 'Bunyi dihidupkan',
-            ctaTag: 'Digital ID', ctaTitle: 'Mahu Digital ID anda sendiri?', ctaDesc: 'Tuntut pautan percuma anda dan bina kad seperti ini dalam beberapa minit.', ctaBtn: 'Cipta sekarang',
+            ctaTag: 'Maple ID', ctaTitle: 'Mahu Maple ID anda sendiri?', ctaDesc: 'Tuntut pautan percuma anda dan bina kad seperti ini dalam beberapa minit.', ctaBtn: 'Cipta sekarang',
             notFoundTitle: 'Belum ada kad di sini', notFoundDesc: 'Tiada sesiapa menuntut pautan ini. Mungkin milik anda.', notFoundBtn: 'Tuntut', errTitle: 'Tidak dapat memuatkan kad ini', errDesc: 'Sila cuba lagi sebentar.' }
     };
     const LANG_KEY = 'dig-lang';
