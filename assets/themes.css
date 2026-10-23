@@ -10,3 +10,7 @@
 [data-theme=ocean]   {--accent:#3b82f6;--accent-2:#22d3ee;--maple-red:#1d4ed8;--soft:#3b82f624;--accent-soft:rgba(59,130,246,.13);--accent-glow:rgba(59,130,246,.45)}
 [data-theme=violet]  {--accent:#a855f7;--accent-2:#ec4899;--maple-red:#7e22ce;--soft:#a855f724;--accent-soft:rgba(168,85,247,.13);--accent-glow:rgba(168,85,247,.45)}
 [data-theme=mono]    {--accent:#e5e7eb;--accent-2:#9ca3af;--maple-red:#6b7280;--soft:#e5e7eb1f;--accent-soft:rgba(229,231,235,.11);--accent-glow:rgba(229,231,235,.3)}
+[data-theme=midnight]{--accent:#6366f1;--accent-2:#38bdf8;--maple-red:#3730a3;--soft:#6366f124;--accent-soft:rgba(99,102,241,.13);--accent-glow:rgba(99,102,241,.45)}
+[data-theme=ice]     {--accent:#7dd3fc;--accent-2:#e0f2fe;--maple-red:#0284c7;--soft:#7dd3fc24;--accent-soft:rgba(125,211,252,.13);--accent-glow:rgba(125,211,252,.45)}
+[data-theme=candy]   {--accent:#f472b6;--accent-2:#c084fc;--maple-red:#be185d;--soft:#f472b624;--accent-soft:rgba(244,114,182,.13);--accent-glow:rgba(244,114,182,.45)}
+[data-theme=matcha]  {--accent:#a3b18a;--accent-2:#dad7cd;--maple-red:#588157;--soft:#a3b18a24;--accent-soft:rgba(163,177,138,.13);--accent-glow:rgba(163,177,138,.45)}

@@ -53,10 +53,11 @@ html[data-glass=on] .bio,html[data-glass=on] .support-desc,html[data-glass=on] .
     #0c0708
 }
 
-/* a little blur, only where it stays smooth */
-@media (hover:hover) and (pointer:fine){
-  html[data-glass=on] .panel,[data-glass=on] .idcard{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-}
+/* frosted amount: Studio → Look → Clear glass → Frost slider */
+html[data-glass=on] .panel,html[data-glass=on] .idcard,[data-glass=on] .idcard,html[data-glass=on] .modal-card,html[data-glass=on] .music-panel{
+  -webkit-backdrop-filter:blur(calc(var(--gb,14)*1px)) saturate(150%);backdrop-filter:blur(calc(var(--gb,14)*1px)) saturate(150%);
+  background-color:color-mix(in srgb,#0c0708 calc(4% + var(--gb,14)*1.4%),transparent)}
+html[data-glass=on] .panel,html[data-glass=on] .idcard,[data-glass=on] .idcard{background-image:var(--g-fill-soft)}
 @media (prefers-reduced-transparency:reduce){
   html[data-glass=on] .panel,[data-glass=on] .idcard{-webkit-backdrop-filter:none;backdrop-filter:none}
 }

@@ -1,0 +1,64 @@
+/* ───────── Maple ID · card top redesign, button alignment fixes, card styles ───────── */
+
+/* ===== buttons: centre the symbol / label inside its box (the base `button` rule left-aligns text) ===== */
+.qty{padding:3px;gap:4px}
+.qty button{display:grid;place-items:center;text-align:center;padding:0;line-height:1;width:28px;height:28px;border-radius:50%;font-size:16px;flex:none}
+.qty button:hover{background:#ffffff12}
+.qty span{min-width:20px}
+.icon-pill{display:grid;place-items:center;padding:0;text-align:center;flex:none}
+.lang{flex:none}
+.lang button{display:grid;place-items:center;text-align:center;min-width:34px;height:24px;padding:0 8px;line-height:1}
+.chip,.chip-btn,.chip-accent{display:inline-flex;align-items:center;gap:5px;text-align:center;line-height:1.2}
+.owner-studio-badge{white-space:nowrap}
+
+/* ===== star card: top bar ===== */
+.shell>.topbar{
+  padding:6px 6px 6px 16px;min-height:46px;gap:10px;flex-wrap:nowrap;
+  border:1px solid #ffffff17;border-radius:999px;background:#ffffff08}
+.shell>.topbar>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+.top-controls{flex:none;gap:5px}
+.icon-pill{width:32px;height:32px}
+@media (max-width:370px){.shell>.topbar>span{display:none}.shell>.topbar{justify-content:flex-end;padding-left:6px}}
+
+/* ===== star card: header (banner + centred identity) ===== */
+.panel>.banner{height:154px;border-radius:20px;border:0}
+.panel>.banner:after{background:linear-gradient(to top,#0c0708f2 4%,transparent 78%)}
+.panel .identity{flex-direction:column;align-items:center;justify-content:flex-start;margin-top:-60px;padding:0 6px;gap:0;text-align:center}
+.panel .identity-left{flex-direction:column;align-items:center;gap:12px;flex:none;width:100%;position:static}
+.panel .avatar{width:108px;height:108px;padding:3px;background:#0c0708;box-shadow:0 14px 40px -14px var(--accent-glow)}
+.panel .avatar-inner{border-color:#0c0708}
+.panel .name-block{padding:0;width:100%;text-align:center;flex:none;position:static}
+.panel .name-row{justify-content:center;position:static;width:100%}
+.panel .name-row .name{text-align:center;font-size:clamp(24px,7vw,32px);letter-spacing:.005em}
+.panel .name-row .love{position:absolute;right:8px;top:70px;z-index:3}
+.panel .handle{display:inline-block;margin-top:10px;padding:5px 13px;border:1px solid #ffffff1a;border-radius:999px;background:#ffffff08;letter-spacing:.16em}
+.panel .handle:empty{display:none}
+
+/* ===== card styles (Studio → Look → Card style) ===== */
+[data-cstyle=outline] .panel,[data-cstyle=outline] .idcard{background:transparent!important;border:1.5px solid color-mix(in srgb,var(--accent) 55%,transparent)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+[data-cstyle=outline] .live,[data-cstyle=outline] .tile,[data-cstyle=outline] .prod,[data-cstyle=outline] .specs-box,[data-cstyle=outline] .stats,[data-cstyle=outline] .support,[data-cstyle=outline] .cta-card{background:transparent!important;border-color:color-mix(in srgb,var(--accent) 32%,transparent)!important;box-shadow:none!important}
+
+[data-cstyle=solid] .panel,[data-cstyle=solid] .idcard{background:#15100f!important;border:1px solid #ffffff14!important;box-shadow:0 24px 60px -30px #000!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+[data-cstyle=solid] .live,[data-cstyle=solid] .tile,[data-cstyle=solid] .prod,[data-cstyle=solid] .specs-box,[data-cstyle=solid] .stats{background:#1d1615!important;border-color:#ffffff12!important}
+[data-cstyle=solid] .support,[data-cstyle=solid] .cta-card{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 26%,#15100f),#15100f 70%)!important}
+
+[data-cstyle=neon] .panel,[data-cstyle=neon] .idcard{background:#0a0708d9!important;border:1px solid var(--accent)!important;box-shadow:0 0 0 1px var(--accent-soft),0 0 34px -6px var(--accent-glow),inset 0 0 34px -18px var(--accent-glow)!important}
+[data-cstyle=neon] .live,[data-cstyle=neon] .tile,[data-cstyle=neon] .prod,[data-cstyle=neon] .specs-box,[data-cstyle=neon] .stats{background:#0a070899!important;border-color:color-mix(in srgb,var(--accent) 55%,transparent)!important;box-shadow:0 0 18px -10px var(--accent-glow)!important}
+
+[data-cstyle=bubble] .panel,[data-cstyle=bubble] .idcard{border-radius:38px!important}
+[data-cstyle=bubble] .banner,[data-cstyle=bubble] .idcard-banner{border-radius:30px!important}
+[data-cstyle=bubble] .live,[data-cstyle=bubble] .tile,[data-cstyle=bubble] .prod,[data-cstyle=bubble] .specs-box,[data-cstyle=bubble] .support,[data-cstyle=bubble] .cta-card{border-radius:28px!important}
+[data-cstyle=bubble] .stats{border-radius:22px!important}
+
+[data-cstyle=tinted] .panel,[data-cstyle=tinted] .idcard{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 24%,#0c0708),color-mix(in srgb,var(--maple-red,var(--accent)) 14%,#0c0708) 70%)!important;border-color:color-mix(in srgb,var(--accent) 38%,transparent)!important}
+[data-cstyle=tinted] .live,[data-cstyle=tinted] .tile,[data-cstyle=tinted] .prod,[data-cstyle=tinted] .specs-box,[data-cstyle=tinted] .stats{background:#0c070866!important;border-color:color-mix(in srgb,var(--accent) 28%,transparent)!important}
+
+/* Studio: frost slider row */
+.frost-row{display:flex;align-items:center;gap:12px}
+.frost-row input[type=range]{flex:1;accent-color:var(--accent)}
+.frost-row output{min-width:28px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--accent)}
+
+/* shop: price and quantity never squeeze each other */
+.prod-row{flex-wrap:wrap;gap:8px 6px}
+.prod-price{white-space:nowrap}
+.prod .btn,.prod [data-buy]{justify-content:center;text-align:center}

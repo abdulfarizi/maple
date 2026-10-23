@@ -1,70 +1,51 @@
-/* ───────── Maple ID · "Maple" theme ─────────
- * Clean, see-through panels like the home page, with the big maple leaf behind the card
- * and leaves drifting down (leaves are drawn by maplefx.js). */
+/* ───────── Maple ID · animated theme backgrounds + clean see-through surfaces ─────────
+ * maplefx.js adds <html class="fx-on"> on card pages and draws the motif for the current theme. */
+#fx-big{position:fixed;inset:0;z-index:0;pointer-events:none;display:grid;place-items:center;overflow:hidden}
+#fx-big:before{content:"";position:absolute;width:min(120vmin,900px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--maple-red,var(--accent)) 30%,transparent),transparent)}
+#fx-big .fx-float{position:relative;width:min(135vmin,860px);opacity:.36;animation:fx-float 18s ease-in-out infinite alternate}
+#fx-big svg{display:block;width:100%;height:auto;overflow:visible}
+#fx-big .veins{fill:none;stroke:#ffd9b0;stroke-opacity:.3;stroke-width:.55;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:1;stroke-dashoffset:1;animation:fx-vein 2.6s .4s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes fx-vein{to{stroke-dashoffset:0}}
+@keyframes fx-float{from{transform:translateY(-8px) scale(1)}to{transform:translateY(10px) scale(1.025)}}
+#fx-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+@media (prefers-reduced-motion:reduce){#fx-big .fx-float{animation:none}#fx-big .veins{stroke-dashoffset:0;animation:none}}
 
-/* big leaf behind everything */
-#maple-bigleaf{position:fixed;inset:0;z-index:0;pointer-events:none;display:grid;place-items:center;overflow:hidden}
-#maple-bigleaf:before{content:"";position:absolute;width:min(120vmin,900px);aspect-ratio:1;border-radius:50%;
-  background:radial-gradient(closest-side,color-mix(in srgb,var(--maple-red,var(--accent)) 34%,transparent),transparent)}
-#maple-bigleaf svg{position:relative;width:min(135vmin,860px);height:auto;transform:rotate(12deg);overflow:visible}
-#maple-bigleaf .body{fill:url(#mfx-grad);opacity:.42}
-#maple-bigleaf .veins{fill:none;stroke:#ffd9b0;stroke-opacity:.3;stroke-width:.55;stroke-linecap:round;stroke-linejoin:round;
-  stroke-dasharray:1;stroke-dashoffset:1;animation:mfx-vein 2.6s .4s cubic-bezier(.22,1,.36,1) forwards}
-@keyframes mfx-vein{to{stroke-dashoffset:0}}
-#maple-fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
-@media (prefers-reduced-motion:reduce){#maple-bigleaf .veins{stroke-dashoffset:0;animation:none}}
-
-/* page */
-html[data-theme=maple]{background:#0c0708}
-html[data-theme=maple] body{
+html.fx-on,html.fx-on body{background-color:#0c0708}
+html.fx-on body{
   background:
     radial-gradient(60% 45% at 88% -8%,color-mix(in oklab,var(--accent) 22%,transparent),transparent 70%),
-    radial-gradient(50% 40% at -6% 96%,color-mix(in oklab,var(--maple-red) 20%,transparent),transparent 70%),
+    radial-gradient(50% 40% at -6% 96%,color-mix(in oklab,var(--maple-red,var(--accent)) 22%,transparent),transparent 70%),
     #0c0708;
   background-attachment:fixed}
-[data-theme=maple] .halo{display:none}
-[data-theme=maple] .bio{color:#e9deda}
-[data-theme=maple] .grid-bg{opacity:.12}
+html.fx-on .halo{display:none}
+html.fx-on .grid-bg{opacity:.1}
+html.fx-on .bio{color:#e9deda}
 
-/* surfaces: transparent + clean (star card, basic card) */
-[data-theme=maple] .panel,
-[data-theme=maple] .idcard{
+/* surfaces: transparent + clean */
+html.fx-on .panel,html.fx-on .idcard{
   background:linear-gradient(160deg,#ffffff0d,#ffffff04),#0c0708a6;
-  border:1px solid #ffffff1c;
-  box-shadow:0 34px 80px -40px #000,inset 0 1px 0 #ffffff0f}
-[data-theme=maple] .panel:before{opacity:.28}
-[data-theme=maple] .live,
-[data-theme=maple] .tile,
-[data-theme=maple] .prod,
-[data-theme=maple] .specs-box,
-[data-theme=maple] .stats{
+  border:1px solid #ffffff1c;box-shadow:0 34px 80px -40px #000,inset 0 1px 0 #ffffff0f}
+html.fx-on .panel:before{opacity:.28}
+html.fx-on .live,html.fx-on .tile,html.fx-on .prod,html.fx-on .specs-box,html.fx-on .stats{
   background:linear-gradient(#ffffff0b,#ffffff03),#0c07088c;border-color:#ffffff17;box-shadow:none}
-[data-theme=maple] .live:hover{border-color:var(--accent);box-shadow:0 12px 32px -14px var(--accent-glow)}
-[data-theme=maple] .support,
-[data-theme=maple] .cta-card{
+html.fx-on .live:hover{border-color:var(--accent);box-shadow:0 12px 32px -14px var(--accent-glow)}
+html.fx-on .support,html.fx-on .cta-card{
   border:1px solid #ffffff1f;
-  background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),#ffffff05 64%);
+  background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),#ffffff05 64%),#0c070880;
   box-shadow:0 22px 46px -26px var(--accent-glow)}
-[data-theme=maple] .icon-pill,
-[data-theme=maple] .lang,
-[data-theme=maple] .love,
-[data-theme=maple] .chip,
-[data-theme=maple] .reacts button,
-[data-theme=maple] .reactions button,
-[data-theme=maple] .like,
-[data-theme=maple] .tile-copy,
-[data-theme=maple] .actions .btn:not(.btn-accent){background:#ffffff0a;border-color:#ffffff1a}
-[data-theme=maple] .modal-card,
-[data-theme=maple] .music-panel{background:#120b0cf0;border-color:#ffffff1f}
-[data-theme=maple] .banner:after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px),linear-gradient(to top,#0c0708,transparent 70%)}
+html.fx-on .icon-pill,html.fx-on .lang,html.fx-on .love,html.fx-on .chip,html.fx-on .reacts button,
+html.fx-on .reactions button,html.fx-on .like,html.fx-on .tile-copy,
+html.fx-on .actions .btn:not(.btn-accent){background:#ffffff0a;border-color:#ffffff1a}
+html.fx-on .modal-card,html.fx-on .music-panel{background:#120b0cf0;border-color:#ffffff1f}
 
-/* a little blur where the device can afford it (leaves move behind the panels) */
 @media (hover:hover) and (pointer:fine){
-  [data-theme=maple] .panel,[data-theme=maple] .idcard{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  html.fx-on .panel,html.fx-on .idcard{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 }
 @media (prefers-reduced-transparency:reduce){
-  [data-theme=maple] .panel,[data-theme=maple] .idcard{-webkit-backdrop-filter:none;backdrop-filter:none}
+  html.fx-on .panel,html.fx-on .idcard{-webkit-backdrop-filter:none;backdrop-filter:none}
 }
 
-/* home page theme picker: 13 swatches wrap neatly */
+/* home page theme picker: many swatches wrap neatly */
 .theme-pick .sw{flex-wrap:wrap}
