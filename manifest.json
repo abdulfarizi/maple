@@ -1,32 +1,17 @@
 {
   "id": "/",
-  "name": "Digital ID",
-  "short_name": "Digital ID",
-  "description": "Your personal Digital ID card.",
+  "name": "Maple ID",
+  "short_name": "Maple ID",
+  "description": "One link for every game ID and social handle.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b0a0f",
-  "theme_color": "#0b0a0f",
+  "background_color": "#0c0708",
+  "theme_color": "#0c0708",
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
