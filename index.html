@@ -39,8 +39,8 @@
     'layout','accent','accent2','cardTag','statusText','statusMode','specs','footerText','bannerGray','bannerDim',
     'avatarShape','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid',
     'spotify','musicAuto','shopEnabled','shopTitle','shopNote','shopWhatsApp','currency','products',
-    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass'];
-  const BOOLS = ['showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','openGame','showLove','liquidGlass'];
+    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass','glassBlur','cardStyle','bgFx'];
+  const BOOLS = ['bgFx','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','openGame','showLove','liquidGlass'];
   const CURRENCIES = ['auto','MYR','SGD','IDR','BND','PHP','THB','USD'];
   const HEX_RE = /^#[0-9a-f]{6}$/i;
   const clampInt = (v, lo, hi, dflt) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt; };
@@ -94,6 +94,8 @@
     if (m.products !== undefined) m.products = cleanProducts(m.products);
     if (m.gaming !== undefined) m.gaming = cleanRows(m.gaming, 24);
     if (m.channels !== undefined) m.channels = cleanRows(m.channels, 24);
+    m.cardStyle = ['default','outline','solid','neon','bubble','tinted'].includes(m.cardStyle) ? m.cardStyle : 'default';
+    m.glassBlur = clampInt(m.glassBlur, 0, 40, 14);
     m.bannerGray = clampInt(m.bannerGray, 0, 100, 75);
     m.bannerDim = clampInt(m.bannerDim, 30, 100, 72);
     for (const k of BOOLS) if (m[k] !== undefined) m[k] = m[k] === true || m[k] === 'true';
@@ -493,9 +495,10 @@
     <link rel="stylesheet" crossorigin href="/assets/index-bhqqsojp.css" />
     <link rel="stylesheet" href="/assets/maple.css?v=2" />
     <link rel="stylesheet" href="/assets/themes.css?v=1" />
-    <link rel="stylesheet" href="/assets/maple-theme.css?v=1" />
-    <link rel="stylesheet" href="/assets/glass.css?v=2" />
-    <script src="/assets/maplefx.js?v=1" defer></script>
+    <link rel="stylesheet" href="/assets/maple-theme.css?v=3" />
+    <link rel="stylesheet" href="/assets/glass.css?v=3" />
+    <link rel="stylesheet" href="/assets/card-ui.css?v=1" />
+    <script src="/assets/maplefx.js?v=3" defer></script>
     <script src="/assets/maple.js?v=1"></script>
   </head>
   <body>
