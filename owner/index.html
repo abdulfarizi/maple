@@ -251,9 +251,10 @@
         #star-intro { position:fixed; inset:0; z-index:99999; background:#07070a; }
     </style>
     <link rel="stylesheet" href="/assets/themes.css?v=1">
-    <link rel="stylesheet" href="/assets/maple-theme.css?v=1">
-    <link rel="stylesheet" href="/assets/glass.css?v=2">
-    <script src="/assets/maplefx.js?v=1" defer></script>
+    <link rel="stylesheet" href="/assets/maple-theme.css?v=3">
+    <link rel="stylesheet" href="/assets/glass.css?v=3">
+    <link rel="stylesheet" href="/assets/card-ui.css?v=1">
+    <script src="/assets/maplefx.js?v=3" defer></script>
 </head>
 <body>
 <div id="star-intro"></div>
@@ -397,7 +398,7 @@
     const isUrl = (v) => /^https?:\/\//i.test(v);
 
     // ---------- defaults ----------
-    const THEMES = ['flame', 'cyber', 'emerald', 'sakura', 'maple', 'autumn', 'sunset', 'crimson', 'gold', 'forest', 'ocean', 'violet', 'mono'];
+    const THEMES = ['maple', 'flame', 'cyber', 'emerald', 'sakura', 'autumn', 'sunset', 'crimson', 'gold', 'forest', 'ocean', 'violet', 'mono', 'midnight', 'ice', 'candy', 'matcha'];
     const DEFAULTS = {
         theme: 'flame', accent: '', accent2: '', cardTag: '', statusText: '', statusMode: 'auto', specs: [], footerText: '',
         bannerGray: 75, bannerDim: 72, avatarShape: 'circle',
@@ -675,6 +676,7 @@
             root.style.setProperty('--accent-soft', `rgba(${r},${g},${bl},0.13)`); root.style.setProperty('--accent-glow', `rgba(${r},${g},${bl},0.45)`);
         }
         root.setAttribute('data-glass', p.liquidGlass === true ? 'on' : 'off');
+        if (window.mapleApply) window.mapleApply(p);
         root.setAttribute('data-avatar', ['circle', 'rounded', 'square'].includes(p.avatarShape) ? p.avatarShape : 'circle');
         const gray = Math.min(100, Math.max(0, Number(p.bannerGray))) / 100, dim = Math.min(100, Math.max(30, Number(p.bannerDim))) / 100;
         root.style.setProperty('--bgray', isNaN(gray) ? 0.75 : gray); root.style.setProperty('--bdim', isNaN(dim) ? 0.72 : dim);
