@@ -100,12 +100,12 @@
       }
     });
     // keep the bottom bar's highlight in step with what's on screen
-    if ('IntersectionObserver' in window && window.dgUI && dgUI.dock) {
+    if (!window.dgPager && 'IntersectionObserver' in window && window.dgUI && dgUI.dock) {
       io = new IntersectionObserver(function (es) { es.forEach(function (en) { dgUI.dock.active(en.isIntersecting ? 'explore' : 'home'); }); }, { rootMargin: '-35% 0px -35% 0px' });
       io.observe(box);
     }
     load(true);
-    if (location.hash === '#explore') setTimeout(function () { box.scrollIntoView({ block: 'start' }); }, 350);
+    if (!window.dgPager && location.hash === '#explore') setTimeout(function () { box.scrollIntoView({ block: 'start' }); }, 350);
   }
   window.dgExplore = { mount: mount };
 })();
