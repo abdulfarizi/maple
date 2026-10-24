@@ -29,7 +29,7 @@
     new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
   const parse = (s) => { try { return JSON.parse(s || '{}') || {}; } catch { return {}; } };
 
-  const RESERVED_SLUGS = ['owner','studio','admin','api','assets','login','signup','www','support','help','about','static','index','digitalid','mapleid'];
+  const RESERVED_SLUGS = ['owner','studio','admin','api','assets','login','signup','www','support','help','about','static','index','digitalid','mapleid','explore','profile'];
   const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,28}[a-z0-9])$/;
   const MEDIA_RE = /^(https?:\/\/\S+|data:image\/(?:jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+)$/i;
   const EDITABLE = ['name','role','bio','country','city','avatar','banner','theme','openTime','closeTime','timezone',
@@ -535,9 +535,10 @@ r.style.setProperty('--accent',a);r.style.setProperty('--accent-2',b);r.style.se
 </script>
     <script src="/assets/qr-lib.js"></script>
     <script src="/assets/maple-ui.js?v=2"></script>
-    <script src="/assets/maple-explore.js?v=1"></script>
+    <script src="/assets/maple-explore.js?v=2"></script>
+    <script src="/assets/maple-pager.js?v=1"></script>
     <script src="/assets/launch.js"></script>
-    <script type="module" crossorigin src="/assets/index-maple1.js"></script>
+    <script type="module" crossorigin src="/assets/index-maple1.js?v=5"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-bhqqsojp.css" />
     <link rel="stylesheet" href="/assets/maple.css?v=2" />
     <link rel="stylesheet" href="/assets/themes.css?v=2" />
@@ -545,6 +546,7 @@ r.style.setProperty('--accent',a);r.style.setProperty('--accent-2',b);r.style.se
     <link rel="stylesheet" href="/assets/glass.css?v=3" />
     <link rel="stylesheet" href="/assets/card-ui.css?v=1" />
     <link rel="stylesheet" href="/assets/maple-ui.css?v=2" />
+    <link rel="stylesheet" href="/assets/maple-pager.css?v=1" />
     <script src="/assets/maplefx.js?v=4" defer></script>
     <script src="/assets/maple.js?v=1"></script>
   </head>
@@ -634,7 +636,7 @@ function createStarIntro(opts) {
       var el = document.getElementById('star-intro');
       var path = location.pathname.replace(/\/+$/, '') || '/';
       var cover = document.getElementById('boot-cover');
-      if (path === '/' || path === '/studio' || path === '/index.html') { if (cover) cover.remove(); }
+      if (path === '/' || path === '/studio' || path === '/explore' || path === '/index.html') { if (cover) cover.remove(); }
       else {
         // a card page: keep the screen dark until the card (or its star frame) is ready
         window.__bootCoverOff = function () { if (!cover) return; var c = cover; cover = null; c.style.opacity = '0'; setTimeout(function () { c.remove(); }, 220); };
@@ -643,7 +645,7 @@ function createStarIntro(opts) {
       var seen = false;
       try { seen = !!sessionStorage.getItem('dig-intro'); } catch (e) {}
       // Only on the home page / studio, once per visit. Star-layout cards play their own intro.
-      if (seen || (path !== '/' && path !== '/studio' && path !== '/index.html')) { el.remove(); return; }
+      if (seen || (path !== '/' && path !== '/studio' && path !== '/explore' && path !== '/index.html')) { el.remove(); return; }
       try { sessionStorage.setItem('dig-intro', '1'); } catch (e) {}
       var intro = createStarIntro({ bg: '#0c0708' });
       var go = function () { setTimeout(function () { intro.go(); }, 250); };
