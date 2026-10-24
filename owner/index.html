@@ -254,7 +254,10 @@
     <link rel="stylesheet" href="/assets/maple-theme.css?v=3">
     <link rel="stylesheet" href="/assets/glass.css?v=3">
     <link rel="stylesheet" href="/assets/card-ui.css?v=1">
+    <link rel="stylesheet" href="/assets/maple-ui.css?v=1">
     <script src="/assets/maplefx.js?v=3" defer></script>
+    <script src="/assets/qr-lib.js"></script>
+    <script src="/assets/maple-ui.js?v=1"></script>
 </head>
 <body>
 <div id="star-intro"></div>
@@ -311,6 +314,7 @@
                     <div class="name-row">
                         <h1 class="name" id="name"></h1>
                         <button type="button" id="love-btn" class="love live" data-act="love" aria-label="Love this card"><i class="fa-solid fa-heart"></i><span id="love-count">0</span></button>
+                        <span id="visits-pill" class="visits" title="Visits"><i class="fa-solid fa-eye"></i><span id="visits-count">0</span></span>
                     </div>
                     <p class="handle" id="role"></p>
                 </div>
@@ -319,8 +323,10 @@
 
         <dl class="stats" id="stats"></dl>
 
-        <div class="chips" id="chips"></div>
-        <div class="specs" id="specs"><div><div class="specs-box" id="specs-box"></div></div></div>
+        <div class="gear hidden" id="specs">
+            <div class="gear-label"><i class="fa-solid fa-microchip"></i><span data-i18n="chipRig">Gear</span></div>
+            <div class="specs-box" id="specs-box"></div>
+        </div>
 
         <div class="status-line hidden" id="status-line"><i class="fa-solid fa-circle-dot"></i><span id="status-line-text"></span></div>
         <p class="bio hidden" id="bio"></p>
@@ -359,16 +365,6 @@
     </a>
 
     <footer style="display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--dim); padding:0 6px;"><span data-i18n="footer">Tap · Scan · Connect</span><span id="footer-right"></span></footer>
-</div>
-
-<div id="qr-modal" class="modal">
-    <div class="modal-card">
-        <div class="modal-head"><span data-i18n="qrHead">Scan Maple Card</span><button type="button" class="x-btn" data-act="close-qr"><i class="fa-solid fa-xmark"></i></button></div>
-        <div style="width:206px; height:206px; margin:0 auto; padding:14px; border-radius:20px; background:#fff; display:grid; place-items:center;"><img id="qr-image" alt="QR" width="178" height="178" loading="lazy"></div>
-        <h2 id="qr-name" style="margin-top:15px; font-size:18px; font-weight:500;"></h2>
-        <p style="margin-top:4px; font-size:11.5px; color:var(--muted); font-family:var(--mono);" data-i18n="qrSub">Point your camera to open this card</p>
-        <div style="margin-top:15px; display:grid; grid-template-columns:1fr 1fr; gap:8px;"><button class="btn live" style="height:42px; font-size:12px; border-radius:12px; justify-content:center;" data-act="share"><span data-i18n="shareBtn">Share</span></button><button class="btn live" style="height:42px; font-size:12px; border-radius:12px; justify-content:center;" data-act="copy-link"><span data-i18n="copyLink">Copy</span></button></div>
-    </div>
 </div>
 
 <div id="note-modal" class="modal">
@@ -506,7 +502,7 @@
             supportTag: 'Support · 00', supportTitle: 'Give Support to', supportDesc: 'Enjoy the content? Fuel the next one with a small tip.', supportVia: '', supportCta: 'Give Support',
             gaming: 'Gaming', channels: 'Channels', subscribe: 'Subscribe', chat: 'Chat', follow: 'Follow', add: 'Add', open: 'Open', copyId: 'Copy ID', copied: 'Copied',
             footer: 'Tap · Scan · Connect', noteHead: 'Quick WhatsApp Note', notePlaceholder: 'Type your note…', noteSend: 'Send via WhatsApp', noteHi: 'Hi', noteDefault: 'I just tapped your card.',
-            toastSaved: 'Contact saved', toastLink: 'Link copied', toastAll: 'All handles copied!', toastId: 'ID copied', toastLang: 'Language: English', toastTheme: 'Theme', toastLofiOn: 'Lofi Beats: ON 🎧', toastLofiOff: 'Lofi Beats: OFF', toastSfxOn: 'UI Sound: ON', toastSfxOff: 'UI Sound: OFF', toastReact: 'Reacted', toastReacted: 'You already reacted 🙂',
+            toastSaved: 'Contact saved', toastSaveReady: 'Contact ready to save', qrSave: 'Save image', qrShare: 'Share', toastQrSaved: 'QR image saved', toastLink: 'Link copied', toastAll: 'All handles copied!', toastId: 'ID copied', toastLang: 'Language: English', toastTheme: 'Theme', toastLofiOn: 'Lofi Beats: ON 🎧', toastLofiOff: 'Lofi Beats: OFF', toastSfxOn: 'UI Sound: ON', toastSfxOff: 'UI Sound: OFF', toastReact: 'Reacted', toastReacted: 'You already reacted 🙂',
             toastLoved: 'Thanks for the love', toastLoved2: 'You already loved this card', tabLinks: 'Links', toastOpening: 'ID copied. Opening {game}…', mail: 'Email', call: 'Call', shopTitle: 'Shop', shopSeller: 'Seller', shopFoot: 'Tap Buy to chat with the seller on WhatsApp. Your order details are filled in for you.', buy: 'Buy', soldOut: 'Sold out',
             buyHi: 'Hi {seller}! I’d like to buy:', buyPrice: 'Price', buyTotal: 'total', buyFrom: 'From your Maple ID card', toastPreviewBuy: 'Preview: Buy opens WhatsApp on the live card',
             showTracks: 'Show tracks', hideTracks: 'Hide tracks',
@@ -520,7 +516,7 @@
             supportTag: 'Sokongan · 00', supportTitle: 'Beri Sokongan kepada', supportDesc: 'Suka kandungan ini? Sokong karya seterusnya dengan sedikit sumbangan.', supportVia: 'melalui SociaBuzz', supportCta: 'Beri Sokongan',
             gaming: 'Permainan', channels: 'Saluran', subscribe: 'Langgan', chat: 'Sembang', follow: 'Ikuti', add: 'Tambah', open: 'Buka', copyId: 'Salin ID', copied: 'Disalin',
             footer: 'Ketik · Imbas · Hubung', noteHead: 'Nota WhatsApp Pantas', notePlaceholder: 'Taip nota anda…', noteSend: 'Hantar melalui WhatsApp', noteHi: 'Hai', noteDefault: 'Saya baru mengetik kad anda.',
-            toastSaved: 'Kenalan disimpan', toastLink: 'Pautan disalin', toastAll: 'Semua nama pengguna disalin!', toastId: 'ID disalin', toastLang: 'Bahasa: Bahasa Melayu', toastTheme: 'Tema', toastLofiOn: 'Lofi Beats: HIDUP 🎧', toastLofiOff: 'Lofi Beats: MATI', toastSfxOn: 'Bunyi UI: HIDUP', toastSfxOff: 'Bunyi UI: MATI', toastReact: 'Bertindak balas', toastReacted: 'Anda sudah bertindak balas 🙂',
+            toastSaved: 'Kenalan disimpan', toastSaveReady: 'Kenalan sedia disimpan', qrSave: 'Simpan imej', qrShare: 'Kongsi', toastQrSaved: 'Imej QR disimpan', toastLink: 'Pautan disalin', toastAll: 'Semua nama pengguna disalin!', toastId: 'ID disalin', toastLang: 'Bahasa: Bahasa Melayu', toastTheme: 'Tema', toastLofiOn: 'Lofi Beats: HIDUP 🎧', toastLofiOff: 'Lofi Beats: MATI', toastSfxOn: 'Bunyi UI: HIDUP', toastSfxOff: 'Bunyi UI: MATI', toastReact: 'Bertindak balas', toastReacted: 'Anda sudah bertindak balas 🙂',
             toastLoved: 'Terima kasih atas sokongan', toastLoved2: 'Anda sudah menyukai kad ini', tabLinks: 'Pautan', toastOpening: 'ID disalin. Membuka {game}…', mail: 'E-mel', call: 'Hubungi', shopTitle: 'Kedai', shopSeller: 'Penjual', shopFoot: 'Ketik Beli untuk bersembang dengan penjual di WhatsApp. Butiran pesanan diisi untuk anda.', buy: 'Beli', soldOut: 'Habis dijual',
             buyHi: 'Hai {seller}! Saya ingin membeli:', buyPrice: 'Harga', buyTotal: 'jumlah', buyFrom: 'Dari kad Maple ID anda', toastPreviewBuy: 'Pratonton: Beli membuka WhatsApp pada kad sebenar',
             showTracks: 'Papar lagu', hideTracks: 'Sembunyi lagu',
@@ -542,7 +538,7 @@
     }
 
     // ---------- state ----------
-    let P = null, sfxEnabled = true, audioCtx, firstRender = true, drawerOpen = false;
+    let P = null, sfxEnabled = true, audioCtx, firstRender = true;
 /* Hollow-star zoom intro: a dark cover with a star-shaped hole. The star grows until the page is revealed. */
     function createStarIntro(opts) {
         opts = opts || {};
@@ -717,24 +713,18 @@
         const cells = [];
         const where = [p.city, p.country].filter(Boolean).join(', ');
         if (where) cells.push(`<div><dt data-i18n="basedIn">${esc(t('basedIn'))}</dt><dd>${esc(where)}</dd></div>`);
-        if (p.showVisits !== false) cells.push(`<div><dt data-i18n="visits">${esc(t('visits'))}</dt><dd class="mono">${esc(Number(p.visits || 0).toLocaleString('en-US'))} 👁️</dd></div>`);
         if (p.showTime !== false) cells.push(`<div><dt data-i18n="localTime">${esc(t('localTime'))}</dt><dd class="mono" id="local-clock">--:--</dd></div>`);
         const dl = $('stats'); setHtml(dl, cells.join('')); dl.classList.toggle('hidden', !cells.length);
-        dl.style.gridTemplateColumns = `repeat(${cells.length || 1},1fr)`;
+        dl.style.gridTemplateColumns = cells.length > 1 ? 'minmax(0,1.7fr) minmax(0,1fr)' : '1fr';
+        const vp = $('visits-pill'); vp.classList.toggle('hidden', p.showVisits === false);
+        const vc = Number(p.visits || 0).toLocaleString('en-US'); if ($('visits-count').textContent !== vc) $('visits-count').textContent = vc;
     }
     const gamesOf = (p) => (p.gaming || []).filter((x) => x && x.value).slice(0, 12).map(gameInfo);
     const chansOf = (p) => (p.channels || []).filter((x) => x && x.value).slice(0, 20).map(channelInfo);
     function renderChips(p) {
-        const games = gamesOf(p), chans = chansOf(p), specs = (p.specs || []).filter((s) => s && s.label && s.value);
-        const copyables = games.concat(chans).filter((x) => x.copy || x.href);
-        const out = [];
-        if (games.length) out.push(`<span class="chip"><i class="fa-solid fa-gamepad"></i> <span data-i18n="chipGaming">${esc(t('chipGaming'))}</span></span>`);
-        if (specs.length) out.push(`<button type="button" class="chip chip-btn" data-act="specs"><i class="fa-solid fa-microchip"></i> <span data-i18n="chipRig">${esc(t('chipRig'))}</span> <i class="fa-solid fa-chevron-down" style="font-size:7px"></i></button>`);
-        if (copyables.length) out.push(`<button type="button" class="chip chip-accent" data-act="copy-all"><i class="fa-solid fa-copy" style="color:inherit"></i> <span data-i18n="copyAll">${esc(t('copyAll'))}</span></button>`);
-        const c = $('chips'); setHtml(c, out.join('')); c.classList.toggle('hidden', !out.length);
-        setHtml($('specs-box'), specs.slice(0, 12).map((s) => `<div><span>${esc(s.label)}</span><b>${esc(s.value)}</b></div>`).join(''));
+        const specs = (p.specs || []).filter((x) => x && x.label && x.value);
+        setHtml($('specs-box'), specs.slice(0, 12).map((x) => `<div><span>${esc(x.label)}</span><b>${esc(x.value)}</b></div>`).join(''));
         $('specs').classList.toggle('hidden', !specs.length);
-        $('specs').classList.toggle('open', drawerOpen && !!specs.length);
     }
     function renderTexts(p) {
         const sl = $('status-line'); sl.classList.toggle('hidden', !p.statusText); $('status-line-text').textContent = p.statusText ? 'Status: ' + p.statusText : '';
@@ -819,7 +809,6 @@
     function renderBottom(p) {
         $('cta').classList.toggle('hidden', p.showCta === false);
         $('footer-right').textContent = p.footerText || p.country || '';
-        $('qr-name').innerHTML = esc(p.name);
     }
     function viewerId() {
         try {
@@ -897,24 +886,10 @@
     }
 
     // ---------- actions ----------
-    const vc = (v) => String(v == null ? '' : v).replace(/([,;\\])/g, '\\$1').replace(/\r?\n/g, '\\n');
-    function buildVCard() {
-        const lines = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + vc(P.name), 'N:;' + vc(P.name) + ';;;'];
-        if (P.role) lines.push('TITLE:' + vc(P.role));
-        if (P.city || P.country) lines.push('ADR;TYPE=HOME:;;;' + vc(P.city) + ';;;' + vc(P.country));
-        lines.push('URL:' + publicUrl());
-        if (P.contactPhone) lines.push('TEL;TYPE=CELL:' + vc(P.contactPhone));
-        if (P.contactEmail) lines.push('EMAIL:' + vc(P.contactEmail));
-        chansOf(P).filter((c) => c.href).forEach((c) => {
-            if (c.href.indexOf('mailto:') === 0) lines.push('EMAIL:' + vc(c.href.slice(7)));
-            else if (c.href.indexOf('tel:') === 0) lines.push('TEL:' + vc(c.href.slice(4)));
-            else lines.push('URL;TYPE=' + String(c.label).replace(/[^A-Za-z]/g, '') + ':' + c.href);
-        });
-        lines.push('END:VCARD'); return lines.join('\r\n');
-    }
     function downloadVCard() {
-        haptic(15); const blob = new Blob([buildVCard()], { type: 'text/vcard;charset=utf-8' }), url = URL.createObjectURL(blob), a = document.createElement('a');
-        a.href = url; a.download = (P.slug || 'contact') + '.vcf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); showToast(t('toastSaved'));
+        haptic(15);
+        const links = chansOf(P).filter((c) => c.href).map((c) => ({ label: c.label, href: c.href }));
+        window.dgUI.vcard.save(P, publicUrl(), links, (shared) => showToast(shared ? t('toastSaveReady') : t('toastSaved')));
     }
     function openModal(id) { $(id).classList.add('show'); }
     function closeModal(id) { $(id).classList.remove('show'); }
@@ -954,8 +929,7 @@
         switch (el.dataset.act) {
             case 'vcard': downloadVCard(); break;
             case 'copy-link': haptic(12); copyText(publicUrl()).then(() => showToast(t('toastLink'))); break;
-            case 'qr': { haptic(12); const img = $('qr-image'); img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&color=07070a&bgcolor=ffffff&data=' + encodeURIComponent(publicUrl()); openModal('qr-modal'); break; }
-            case 'close-qr': closeModal('qr-modal'); break;
+            case 'qr': haptic(12); window.dgUI.qr.open({ name: P.name, url: publicUrl(), labels: { title: t('qrHead'), hint: t('qrSub'), save: t('qrSave'), share: t('qrShare'), copy: t('copyLink'), copied: t('toastLink'), saved: t('toastQrSaved') } }); break;
             case 'share': shareCard(); break;
             case 'note': haptic(10); openModal('note-modal'); break;
             case 'close-note': closeModal('note-modal'); break;
@@ -963,12 +937,6 @@
             case 'love': love(); break;
             case 'mp-expand': expanded = !expanded; buildEmbed(); syncSoundUi(); break;
             case 'send-note': { const n = $('custom-note').value.trim(); const msg = t('noteHi') + ' ' + P.name + '! ' + (n || t('noteDefault')); const sw = sellerWa(P); if (sw) window.open(waWithText(sw.href, msg), '_blank', 'noopener'); closeModal('note-modal'); break; }
-            case 'specs': { haptic(10); playTone(480, 0.04); drawerOpen = !drawerOpen; $('specs').classList.toggle('open', drawerOpen); break; }
-            case 'copy-all': {
-                haptic(15);
-                const text = gamesOf(P).concat(chansOf(P)).map((c) => c.label + ': ' + (c.copy || c.href)).join('\n');
-                copyText(text).then(() => showToast(t('toastAll'))); break;
-            }
         }
     });
     $('support-tile').addEventListener('click', function (e) {
@@ -992,7 +960,7 @@
         });
     });
     document.addEventListener('pointerdown', (e) => { if (e.target.closest && e.target.closest('.live')) playTone(540, 0.035); });
-    ['qr-modal', 'note-modal'].forEach((id) => $(id).addEventListener('click', (e) => { if (e.target.id === id) closeModal(id); }));
+    ['note-modal'].forEach((id) => $(id).addEventListener('click', (e) => { if (e.target.id === id) closeModal(id); }));
 
 
     // ---------- shop (seller section): Buy opens WhatsApp ----------
