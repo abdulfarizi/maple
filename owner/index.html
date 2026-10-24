@@ -250,14 +250,14 @@
         .modal:not(.show) { backdrop-filter:none; }
         #star-intro { position:fixed; inset:0; z-index:99999; background:#07070a; }
     </style>
-    <link rel="stylesheet" href="/assets/themes.css?v=1">
+    <link rel="stylesheet" href="/assets/themes.css?v=2">
     <link rel="stylesheet" href="/assets/maple-theme.css?v=3">
     <link rel="stylesheet" href="/assets/glass.css?v=3">
     <link rel="stylesheet" href="/assets/card-ui.css?v=1">
-    <link rel="stylesheet" href="/assets/maple-ui.css?v=1">
-    <script src="/assets/maplefx.js?v=3" defer></script>
+    <link rel="stylesheet" href="/assets/maple-ui.css?v=2">
+    <script src="/assets/maplefx.js?v=4" defer></script>
     <script src="/assets/qr-lib.js"></script>
-    <script src="/assets/maple-ui.js?v=1"></script>
+    <script src="/assets/maple-ui.js?v=2"></script>
 </head>
 <body>
 <div id="star-intro"></div>
@@ -394,7 +394,7 @@
     const isUrl = (v) => /^https?:\/\//i.test(v);
 
     // ---------- defaults ----------
-    const THEMES = ['maple', 'flame', 'cyber', 'emerald', 'sakura', 'autumn', 'sunset', 'crimson', 'gold', 'forest', 'ocean', 'violet', 'mono', 'midnight', 'ice', 'candy', 'matcha'];
+    const THEMES = (window.dgUI && window.dgUI.themes) ? window.dgUI.themes.map((x) => x[0]) : ['maple', 'flame', 'cyber', 'emerald', 'sakura', 'autumn', 'sunset', 'crimson', 'gold', 'forest', 'ocean', 'violet', 'mono', 'midnight', 'ice', 'candy', 'matcha'];
     const DEFAULTS = {
         theme: 'flame', accent: '', accent2: '', cardTag: '', statusText: '', statusMode: 'auto', specs: [], footerText: '',
         bannerGray: 75, bannerDim: 72, avatarShape: 'circle',
@@ -1117,6 +1117,10 @@
         try { localStorage.setItem(LANG_KEY, lang); } catch {} showToast(t('toastLang'));
     }));
 
+    if (!EMBED && !PREVIEW && window.dgUI) window.dgUI.dock.set([
+        { id: 'home', href: '/', icon: 'fa-house', label: 'Home' },
+        { id: 'explore', href: '/#explore', icon: 'fa-compass', label: 'Explore' },
+        { id: 'card', href: location.pathname, icon: 'fa-id-card', label: 'Card', active: true }]);
     setInterval(renderClock, 15000); setInterval(() => { if (P) renderStatus(); }, 60000);
     applyLang(lang);
     if (!PREVIEW && !EMBED) loadStandalone();
