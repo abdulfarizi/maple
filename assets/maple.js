@@ -118,6 +118,7 @@
       recolor();
     };
     box.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.t); }); });
+    var cur = document.documentElement.dataset.theme; box.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.t === cur)); });
   }
 
   window.mapleHome = {

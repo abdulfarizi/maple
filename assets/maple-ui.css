@@ -1,0 +1,162 @@
+/* ───────── Maple ID · UI layer v4 ─────────
+ * - no blue tap box, iOS-style press animation
+ * - restyled QR sheet
+ * - basic card: bigger profile picture, theme + glass compatible
+ * - everything follows the theme variables (--accent, --accent-2, --maple-red)
+ */
+
+/* ===== no tap highlight / focus box on press ===== */
+*{-webkit-tap-highlight-color:transparent}
+a,button,.btn,.tile,.live,[role=button],[role=tab],.swatch,.tab,.layout-opt,summary{
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;outline:none}
+:focus:not(:focus-visible){outline:none!important}
+button:focus,a:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent-2,var(--accent));outline-offset:3px;border-radius:12px}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent);color:inherit}
+input,textarea,select{-webkit-tap-highlight-color:transparent}
+
+/* ===== iOS-style press: quick squeeze in, springy release ===== */
+button,a[href],.btn,.tile,.live,[role=button],[role=tab],.swatch,.tab,.ptab,.layout-opt,label.toggle,summary,.qs-btn,.like,.love{
+  transition:scale .5s cubic-bezier(.34,1.56,.64,1),filter .35s ease,background-color .25s,border-color .25s,color .25s,box-shadow .3s,transform .25s var(--ease,ease),opacity .2s;
+  will-change:auto}
+.is-pressed{scale:var(--ps,.955);filter:brightness(1.22) saturate(1.08);transition:scale .11s ease-out,filter .11s ease-out,background-color .11s,border-color .11s!important}
+.tile.is-pressed,.support.is-pressed,.cta-card.is-pressed,.prod.is-pressed,.layout-opt.is-pressed,.swatch.is-pressed{--ps:.975}
+.icon-pill.is-pressed,.love.is-pressed,.like.is-pressed,.tile-copy.is-pressed,.qty button.is-pressed,.x-btn.is-pressed,.qs-x.is-pressed{--ps:.88}
+.reacts button.is-pressed,.reactions button.is-pressed,.chip.is-pressed{--ps:.92}
+.btn:active{transform:none}
+.is-pressed.tile,.is-pressed.live{transform:none}
+/* list rows get a soft tint while pressed, like iOS table cells */
+.tile.is-pressed,.live.is-pressed{background-image:linear-gradient(color-mix(in srgb,var(--accent) 14%,transparent),color-mix(in srgb,var(--accent) 14%,transparent))}
+@media (prefers-reduced-motion:reduce){.is-pressed{scale:1;filter:brightness(1.15)}}
+
+/* ===== the leaf & theme everywhere ===== */
+.brand .leaf-ico,.leaf-ico{transition:filter .4s}
+body,.topbar,.btn,.panel{transition:background-color .4s,border-color .4s,color .3s}
+.btn-accent{background:linear-gradient(135deg,var(--accent) 0%,color-mix(in oklab,var(--accent) 62%,var(--maple-red,var(--accent))) 100%);color:var(--on-accent,#16080a)}
+.nav-link[data-theme-follow]{color:var(--accent)}
+.tab.active{color:var(--on-accent,#16080a)}
+.auth-tabs [aria-selected=true]{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)}
+.keep{display:flex;align-items:center;gap:10px;margin:2px 0 14px;font-size:13.5px;color:var(--muted);cursor:pointer;width:fit-content}
+.keep input{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:7px;border:1.5px solid color-mix(in srgb,var(--accent) 45%,var(--line));background:transparent;display:grid;place-items:center;transition:background .25s,border-color .25s,scale .4s cubic-bezier(.34,1.56,.64,1);cursor:pointer;flex:none}
+.keep input:checked{background:var(--accent);border-color:var(--accent)}
+.keep input::after{content:"";width:6px;height:11px;border:solid var(--on-accent,#16080a);border-width:0 2.2px 2.2px 0;transform:rotate(45deg) scale(0);margin-top:-2px;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.keep input:checked::after{transform:rotate(45deg) scale(1)}
+.keep input:active{scale:.88}
+.keep:has(input:focus-visible) input{outline:2px solid var(--accent-2);outline-offset:2px}
+.keep span{color:var(--text)}
+
+/* ===== BASIC card: bigger avatar, centred identity, theme + glass aware ===== */
+.card-page .idcard{--av:132px;padding:14px;border-radius:30px;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--accent) 7%,var(--panel)),var(--panel) 60%);
+  border-color:color-mix(in srgb,var(--accent) 22%,var(--line))}
+.card-page .idcard:before{display:none}
+.card-page .idcard-banner{height:158px;border-radius:22px;border:0;background:linear-gradient(120deg,var(--accent),var(--accent-2) 60%,var(--maple-red,var(--accent)))}
+.card-page .idcard-banner .foil{background:repeating-linear-gradient(0deg,#0003 0 1px,transparent 1px 3px),linear-gradient(to top,color-mix(in srgb,var(--panel) 96%,transparent),transparent 72%)}
+.card-page .idcard-banner:after{display:none}
+.card-page .idcard-body{padding:0 6px 4px}
+.card-page .idcard-head{grid-template-columns:1fr;justify-items:center;text-align:center;padding-top:0;row-gap:0}
+.card-page .avatar{width:var(--av);height:var(--av);margin-top:calc(var(--av) / -2 - 4px);padding:4px;
+  background:var(--panel);box-shadow:0 16px 40px -16px var(--accent-glow,#0008),0 0 0 6px color-mix(in srgb,var(--panel) 80%,transparent)}
+.card-page .avatar-inner{border-width:3px;border-color:var(--panel)}
+.card-page .avatar span{font-size:44px}
+.card-page .who{padding:14px 0 0;width:100%;text-align:center}
+.card-page .who h1{font-size:clamp(25px,7.4vw,32px);letter-spacing:-.01em}
+.card-page .who p{margin-top:8px;display:inline-block;padding:5px 13px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--accent) 8%,transparent);letter-spacing:.14em}
+.card-page .bio{text-align:center;margin-top:16px;color:var(--text);opacity:.82}
+
+/* love + visits row: visits on the left, love on the right, same height */
+.card-page .idcard-head .like{position:absolute;right:6px;top:14px;margin:0;grid-column:auto;grid-row:auto;
+  background:color-mix(in srgb,var(--panel) 70%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.card-page .idcard-head .visits{position:absolute;left:6px;top:14px;display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;
+  font-family:var(--mono);font-size:13px;color:var(--muted);background:color-mix(in srgb,var(--panel) 70%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.card-page .idcard-head .visits i{color:var(--accent-2)}
+.card-page .idcard-head{position:relative}
+.card-page .facts{grid-template-columns:1.5fr 1fr;border-color:color-mix(in srgb,var(--accent) 18%,var(--line))}
+.card-page .facts dd{overflow-wrap:anywhere}
+.card-page .mrz{display:none}
+.card-page .actions .btn{border-radius:16px;height:50px;background:color-mix(in srgb,var(--accent) 6%,var(--panel))}
+.card-page .actions .btn-accent{background:linear-gradient(135deg,var(--accent),color-mix(in oklab,var(--accent) 62%,var(--maple-red,var(--accent))))}
+.card-page .tile,.card-page .reactions button,.card-page .tile-copy{background:color-mix(in srgb,var(--accent) 5%,var(--panel));border-color:color-mix(in srgb,var(--accent) 16%,var(--line))}
+.card-page .tile .ico{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent)}
+.card-page .list h2{color:var(--muted)}
+.card-page .support{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 16%,transparent),var(--panel) 62%) padding-box,conic-gradient(from var(--support-angle),var(--accent),transparent 30%,var(--accent-2) 50%,transparent 70%,var(--accent)) border-box}
+.card-page .owner-bar{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.card-page .donate-btn,.widget-section .donate-btn{color:var(--on-accent,#16080a)}
+@media (width<=400px){.card-page .idcard{--av:118px}.card-page .idcard-head{grid-template-columns:1fr}}
+
+/* basic card + Clear glass: the whole card, tiles, pills and buttons turn into frosted glass */
+html[data-glass=on] .card-page .idcard,[data-glass=on] .card-page .idcard{
+  background:linear-gradient(165deg,#ffffff12,#ffffff05)!important;border-color:#ffffff24!important;
+  -webkit-backdrop-filter:blur(calc(var(--gb,14)*1px)) saturate(160%);backdrop-filter:blur(calc(var(--gb,14)*1px)) saturate(160%);
+  box-shadow:0 34px 80px -40px #000,inset 0 1px 0 #ffffff1a!important}
+html[data-glass=on] .card-page .idcard-banner .foil{background:repeating-linear-gradient(0deg,#0002 0 1px,transparent 1px 3px),linear-gradient(to top,#0c070866,transparent 72%)}
+html[data-glass=on] .card-page .avatar{background:#ffffff14;box-shadow:0 16px 40px -16px var(--accent-glow),0 0 0 6px #ffffff10}
+html[data-glass=on] .card-page .avatar-inner{border-color:#ffffff14}
+html[data-glass=on] .card-page .tile,html[data-glass=on] .card-page .tile-copy,html[data-glass=on] .card-page .reactions button,
+html[data-glass=on] .card-page .actions .btn:not(.btn-accent),html[data-glass=on] .card-page .like,html[data-glass=on] .card-page .visits,html[data-glass=on] .card-page .who p{
+  background:linear-gradient(#ffffff10,#ffffff05)!important;border-color:#ffffff1c!important;
+  -webkit-backdrop-filter:blur(calc(var(--gb,14)*.6px));backdrop-filter:blur(calc(var(--gb,14)*.6px))}
+html[data-glass=on] .card-page .support{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 24%,transparent),#ffffff06 64%) padding-box,conic-gradient(from var(--support-angle),var(--accent),transparent 30%,var(--accent-2) 50%,transparent 70%,var(--accent)) border-box;-webkit-backdrop-filter:blur(calc(var(--gb,14)*.6px));backdrop-filter:blur(calc(var(--gb,14)*.6px))}
+html[data-glass=on] .card-page .facts{border-color:#ffffff1c}
+html[data-glass=on] .card-page .bio,html[data-glass=on] .card-page .who p,html[data-glass=on] .card-page .facts dt,html[data-glass=on] .card-page .list h2{color:#ffffffc8}
+html[data-glass=on] .card-page .like.liked{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 32%,transparent),#ffffff08)!important;border-color:var(--accent)!important}
+html[data-glass=on] body::before{z-index:0}
+html[data-glass=on] .topbar{background:#ffffff0d;-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%)}
+html[data-glass=on] .toast{background:#ffffffe6;color:#0c0708}
+
+/* the basic card reacts to every theme: banner, rings and tiles use theme vars (also inside the Studio preview) */
+.preview-inner .idcard{--av:112px}
+.preview-inner .idcard-banner{height:132px}
+
+/* card styles on the basic card (these used to be star-only in places) */
+[data-cstyle=neon] .card-page .tile-copy,[data-cstyle=outline] .card-page .tile-copy{background:transparent!important;border-color:color-mix(in srgb,var(--accent) 40%,transparent)!important}
+[data-cstyle=outline] .card-page .actions .btn:not(.btn-accent),[data-cstyle=outline] .card-page .reactions button,[data-cstyle=outline] .card-page .like,[data-cstyle=outline] .card-page .visits{background:transparent!important}
+[data-cstyle=solid] .card-page .actions .btn:not(.btn-accent),[data-cstyle=solid] .card-page .reactions button,[data-cstyle=solid] .card-page .tile-copy,[data-cstyle=solid] .card-page .tile{background:#1d1615!important}
+[data-cstyle=tinted] .card-page .tile,[data-cstyle=tinted] .card-page .tile-copy,[data-cstyle=tinted] .card-page .actions .btn:not(.btn-accent),[data-cstyle=tinted] .card-page .reactions button{background:color-mix(in srgb,var(--accent) 14%,#0c0708)!important}
+[data-cstyle=bubble] .card-page .tile,[data-cstyle=bubble] .card-page .tile-copy,[data-cstyle=bubble] .card-page .actions .btn,[data-cstyle=bubble] .card-page .reactions button{border-radius:26px!important}
+[data-cstyle=bubble] .card-page .support{border-radius:30px}
+
+/* ===== STAR card tweaks (visits on the left, gear always open) ===== */
+.panel .name-row .visits{position:absolute;left:8px;top:70px;z-index:3;display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;
+  border:1px solid var(--line-strong);background:rgba(255,255,255,.04);font-family:var(--mono);font-size:12px;color:var(--muted)}
+.panel .name-row .visits i{color:var(--accent-2);font-size:13px}
+.panel{overflow:visible}
+.stats{grid-template-columns:1fr auto}
+.stats dd{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
+.stats > div:first-child{padding-left:8px}
+.gear{margin-top:12px;padding:0 4px}
+.gear .specs-box{margin-top:0}
+.gear-label{display:flex;align-items:center;gap:7px;padding:0 4px 8px;font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.gear-label i{color:var(--accent);font-size:10px}
+html[data-glass=on] .gear .specs-box{background:var(--g-fill);border-color:#ffffff17}
+
+/* ===== QR sheet ===== */
+.qs{position:fixed;inset:0;z-index:200;display:grid;align-items:end;justify-items:center;pointer-events:none}
+.qs.open{pointer-events:auto}
+.qs-back{position:absolute;inset:0;background:rgba(5,3,4,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0;transition:opacity .35s}
+.qs.open .qs-back{opacity:1}
+.qs-sheet{position:relative;width:min(100%,420px);padding:10px 18px calc(20px + env(safe-area-inset-bottom));border-radius:30px 30px 0 0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 14%,#17100f),#120c0c 55%);
+  border:1px solid color-mix(in srgb,var(--accent) 26%,#ffffff1a);border-bottom:0;box-shadow:0 -30px 80px -30px var(--accent-glow,#000a);
+  transform:translateY(105%);transition:transform .5s cubic-bezier(.22,1,.36,1);touch-action:pan-y;color:#f6eeea}
+.qs.open .qs-sheet{transform:none}
+.qs-grab{width:40px;height:5px;border-radius:5px;background:#ffffff33;margin:0 auto 14px}
+.qs-x{position:absolute;right:14px;top:14px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#ffffff12;color:#f6eeea;font-size:13px;padding:0}
+.qs-card{text-align:center;padding:6px 0 4px}
+.qs-code{width:min(72vw,248px);margin:4px auto 0;padding:10px;border-radius:26px;background:#fff;position:relative;
+  box-shadow:0 24px 60px -24px var(--accent-glow,#000),0 0 0 2px color-mix(in srgb,var(--accent) 60%,transparent),0 0 0 7px color-mix(in srgb,var(--accent) 14%,transparent);
+  animation:qs-pop .6s cubic-bezier(.34,1.56,.64,1) both .12s}
+.qs-code svg{display:block;width:100%;height:auto;border-radius:16px}
+@keyframes qs-pop{from{opacity:0;transform:scale(.86) translateY(14px)}to{opacity:1;transform:none}}
+.qs-name{margin:20px 0 4px;font-family:var(--display,var(--sans));font-size:22px;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}
+.qs-url{font-family:var(--mono);font-size:12px;color:var(--accent-2);overflow-wrap:anywhere}
+.qs-hint{margin-top:8px;font-size:12.5px;color:#ad9f9b}
+.qs-acts{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px;margin-top:18px}
+.qs-btn{height:50px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:500;color:#f6eeea;
+  background:#ffffff0d;border:1px solid #ffffff1a;padding:0 8px;text-align:center;white-space:nowrap}
+.qs-btn i{color:var(--accent);font-size:13px}
+.qs-main{background:linear-gradient(135deg,var(--accent),color-mix(in oklab,var(--accent) 62%,var(--maple-red,var(--accent))));border-color:transparent;color:var(--on-accent,#16080a);font-weight:600}
+.qs-main i{color:inherit}
+@media (min-width:560px){.qs{align-items:center}.qs-sheet{border-radius:30px;border-bottom:1px solid color-mix(in srgb,var(--accent) 26%,#ffffff1a);padding-bottom:22px;transform:translateY(30px) scale(.96);opacity:0;transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .3s}.qs.open .qs-sheet{opacity:1;transform:none}.qs-grab{display:none}}
+@media (max-width:360px){.qs-btn span{display:none}.qs-acts{grid-template-columns:repeat(3,1fr)}}
+#qr-modal{display:none!important}
