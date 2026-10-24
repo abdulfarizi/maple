@@ -39,8 +39,8 @@
     'layout','accent','accent2','cardTag','statusText','statusMode','specs','footerText','bannerGray','bannerDim',
     'avatarShape','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid',
     'spotify','musicAuto','shopEnabled','shopTitle','shopNote','shopWhatsApp','currency','products',
-    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass','glassBlur','cardStyle','bgFx'];
-  const BOOLS = ['bgFx','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','openGame','showLove','liquidGlass'];
+    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass','glassBlur','cardStyle','bgFx','listed'];
+  const BOOLS = ['bgFx','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','openGame','showLove','liquidGlass','listed'];
   const CURRENCIES = ['auto','MYR','SGD','IDR','BND','PHP','THB','USD'];
   const HEX_RE = /^#[0-9a-f]{6}$/i;
   const clampInt = (v, lo, hi, dflt) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt; };
@@ -397,6 +397,43 @@
       return json({ available: !conflict, reason: conflict });
     }
 
+    // ===== Creator directory: finder + leaderboard (light list first, details only for the rows shown) =====
+    if (url.includes('/api/directory/stats')) {
+      const sp = new URL(url, location.origin).searchParams;
+      const sort = sp.get('sort') === 'likes' ? 'likes' : 'visits';
+      const limit = clampInt(sp.get('limit'), 1, 30, 10), offset = clampInt(sp.get('offset'), 0, 5000, 0);
+      const q = String(sp.get('q') || '').replace(/[^\p{L}\p{N} .-]/gu, '').trim().slice(0, 30);
+      let filter = '';
+      if (q) {
+        const r0 = await sb(`/rest/v1/profiles?select=slug&or=(slug.ilike.*${encodeURIComponent(q)}*,name.ilike.*${encodeURIComponent(q)}*)&limit=60`);
+        const found = r0 && r0.ok ? await r0.json().catch(() => []) : [];
+        const slugs = (Array.isArray(found) ? found : []).map((x) => x.slug).filter((x) => /^[a-z0-9-]{1,30}$/.test(x));
+        if (!slugs.length) return json({ rows: [], total: 0 });
+        filter = `&slug=in.(${slugs.join(',')})`;
+      }
+      const r = await sb(`/rest/v1/profile_stats?select=slug,visits,likes&order=${sort}.desc.nullslast,slug.asc&limit=${limit}&offset=${offset}${filter}`, { headers: { Prefer: 'count=exact' } });
+      if (!r || !r.ok) return json({ error: 'Could not load the list.' }, 503);
+      const rows = await r.json().catch(() => []);
+      const m = /\/(\d+)$/.exec(r.headers.get('content-range') || '');
+      return json({ rows: Array.isArray(rows) ? rows : [], total: m ? Number(m[1]) : (Array.isArray(rows) ? rows.length : 0) });
+    }
+    if (url.includes('/api/directory/cards')) {
+      const sp = new URL(url, location.origin).searchParams;
+      const slugs = String(sp.get('slugs') || '').split(',').map(normSlug).filter((x) => /^[a-z0-9-]{1,30}$/.test(x)).slice(0, 12);
+      if (!slugs.length) return json({ cards: {} });
+      const r = await sb(`/rest/v1/profiles?select=id,slug,name&slug=in.(${slugs.join(',')})`);
+      if (!r || !r.ok) return json({ error: 'Could not load the list.' }, 503);
+      const rows = await r.json().catch(() => []);
+      const cards = {};
+      for (const row of (Array.isArray(rows) ? rows : [])) {
+        const p = unpackRow(row);
+        if (p.listed === false) continue;                     // creator opted out in Studio
+        cards[row.slug] = { slug: row.slug, name: p.name, role: p.role || '', city: p.city || '', country: p.country || '', theme: p.theme || 'flame',
+          avatar: typeof p.avatar === 'string' && p.avatar.length < 160000 ? p.avatar : '' };
+      }
+      return json({ cards });
+    }
+
     // ===== Public profiles, likes, reactions =====
     if (url.includes('/api/profiles/')) {
       const parts = url.split('/api/profiles/')[1].split('?')[0].split('/');
@@ -497,17 +534,18 @@ if(/^#[0-9a-f]{6}$/i.test(o.accent||'')){var a=o.accent,b=/^#[0-9a-f]{6}$/i.test
 r.style.setProperty('--accent',a);r.style.setProperty('--accent-2',b);r.style.setProperty('--accent-soft','rgba('+x+','+y+','+z+',.13)');r.style.setProperty('--accent-glow','rgba('+x+','+y+','+z+',.45)');r.style.setProperty('--soft','rgba('+x+','+y+','+z+',.14)')}}catch(e){}})();
 </script>
     <script src="/assets/qr-lib.js"></script>
-    <script src="/assets/maple-ui.js?v=1"></script>
+    <script src="/assets/maple-ui.js?v=2"></script>
+    <script src="/assets/maple-explore.js?v=1"></script>
     <script src="/assets/launch.js"></script>
     <script type="module" crossorigin src="/assets/index-maple1.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-bhqqsojp.css" />
     <link rel="stylesheet" href="/assets/maple.css?v=2" />
-    <link rel="stylesheet" href="/assets/themes.css?v=1" />
+    <link rel="stylesheet" href="/assets/themes.css?v=2" />
     <link rel="stylesheet" href="/assets/maple-theme.css?v=3" />
     <link rel="stylesheet" href="/assets/glass.css?v=3" />
     <link rel="stylesheet" href="/assets/card-ui.css?v=1" />
-    <link rel="stylesheet" href="/assets/maple-ui.css?v=1" />
-    <script src="/assets/maplefx.js?v=3" defer></script>
+    <link rel="stylesheet" href="/assets/maple-ui.css?v=2" />
+    <script src="/assets/maplefx.js?v=4" defer></script>
     <script src="/assets/maple.js?v=1"></script>
   </head>
   <body>
