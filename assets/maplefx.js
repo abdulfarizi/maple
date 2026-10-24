@@ -41,7 +41,15 @@
     midnight: { shape: 'spark',  mode: 'twinkle', n: 36, s: [5, 18],  alpha: 0.85 },
     ice:      { shape: 'snow',   mode: 'fall',    n: 26, s: [10, 26], spin: 1, stroke: 1, sway: 1, alpha: 0.6 },
     candy:    { shape: 'heart',  mode: 'rise',    n: 22, s: [10, 28], sway: 1, flutter: 0, alpha: 0.55 },
-    matcha:   { shape: 'slim',   mode: 'fall',    n: 22, s: [14, 40], spin: 1, flutter: 1, alpha: 0.5 }
+    matcha:   { shape: 'slim',   mode: 'fall',    n: 22, s: [14, 40], spin: 1, flutter: 1, alpha: 0.5 },
+    aurora:   { shape: 'circle', mode: 'wander',  n: 16, s: [40, 90], alpha: 0.22, soft: 1 },
+    rose:     { shape: 'petal',  mode: 'rise',    n: 24, s: [8, 22],  spin: 1, flutter: 1, sway: 1, alpha: 0.55 },
+    lava:     { shape: 'circle', mode: 'rise',    n: 16, s: [24, 64], alpha: 0.4, soft: 1 },
+    mint:     { shape: 'slim',   mode: 'rise',    n: 22, s: [12, 34], spin: 1, flutter: 1, sway: 1, alpha: 0.5 },
+    grape:    { shape: 'circle', mode: 'fall',    n: 24, s: [8, 22],  sway: 1, alpha: 0.55 },
+    sand:     { shape: 'circle', mode: 'fall',    n: 46, s: [2, 6],   sway: 1, alpha: 0.55 },
+    lime:     { shape: 'rect',   mode: 'rise',    n: 30, s: [3, 9],   alpha: 0.7 },
+    sky:      { shape: 'circle', mode: 'rise',    n: 14, s: [40, 110], alpha: 0.14, soft: 1 }
   };
 
   /* ---------- the big shape behind the card ---------- */
@@ -65,7 +73,15 @@
     midnight:{ rot: -18, svg: '<ellipse cx="50" cy="50" rx="48" ry="12" ' + S + ' stroke-width="1.2" opacity=".6" transform="rotate(-20 50 50)"/><circle cx="50" cy="50" r="26" ' + F + '/><ellipse cx="50" cy="50" rx="48" ry="12" ' + S + ' stroke-width="1.6" transform="rotate(-20 50 50)" stroke-dasharray="76 200" stroke-dashoffset="-6"/>' },
     ice:     { rot: 0,  svg: '<g ' + S + ' stroke-width="2.4"><path d="M50 4V96M10 27L90 73M10 73L90 27"/><path d="M50 18L40 8M50 18L60 8M50 82L40 92M50 82L60 92M16 38L8 50M16 38L26 40M84 62L92 50M84 62L74 60M16 62L8 50M16 62L26 60M84 38L92 50M84 38L74 40" stroke-width="1.6"/></g><circle cx="50" cy="50" r="6" ' + F + '/>' },
     candy:   { rot: -8, svg: '<path class="b" ' + F + ' d="' + D.heart + '"/><path d="M26 28C32 22 40 22 44 28" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/>' },
-    matcha:  { rot: 0,  svg: rot(D.slim, 5, 28, 'translate(50 96) scale(.62) translate(-50 -98)').replace(/rotate\((-?\d+) 50 50\)/g, function (m, a) { return 'rotate(' + (a - 56) + ' 50 96)'; }) }
+    matcha:  { rot: 0,  svg: rot(D.slim, 5, 28, 'translate(50 96) scale(.62) translate(-50 -98)').replace(/rotate\((-?\d+) 50 50\)/g, function (m, a) { return 'rotate(' + (a - 56) + ' 50 96)'; }) },
+    aurora:  { rot: 0,  svg: '<g ' + S + ' stroke-width="3.2"><path d="M0 30Q25 8 50 30T100 30"/><path d="M0 48Q25 26 50 48T100 48" opacity=".8"/><path d="M0 66Q25 44 50 66T100 66" opacity=".6"/><path d="M0 84Q25 62 50 84T100 84" opacity=".4"/></g>' },
+    rose:    { rot: 0,  svg: rot(D.petal, 8, 45, 'translate(50 50) scale(.5) translate(-50 -96)') + rot(D.petal, 8, 22.5, 'translate(50 50) scale(.32) translate(-50 -96)').replace(/fill="url\(#fx-g\)"/g, 'fill="var(--accent-2)" opacity=".7"') + '<circle cx="50" cy="50" r="5" fill="var(--accent-2)"/>' },
+    lava:    { rot: 0,  svg: '<circle cx="38" cy="62" r="26" ' + F + '/><circle cx="66" cy="36" r="20" ' + F + ' opacity=".85"/><path d="M44 42Q52 52 60 50L58 64Q48 62 40 58Z" ' + F + '/><circle cx="62" cy="78" r="13" fill="var(--accent-2)" opacity=".6"/><circle cx="24" cy="26" r="8" fill="var(--accent-2)" opacity=".5"/>' },
+    mint:    { rot: 0,  svg: '<path d="M50 98C50 70 50 40 50 6" ' + S + ' stroke-width="2.4"/>' + [80, 60, 40, 22].map(function (y, i) { var sc = 0.34 - i * 0.04; return ['-58', '58'].map(function (a) { return '<path d="' + D.slim + '" ' + F + ' transform="translate(50 ' + y + ') rotate(' + a + ') scale(' + sc + ') translate(-50 -98)"/>'; }).join(''); }).join('') + '<path d="' + D.slim + '" ' + F + ' transform="translate(50 10) scale(.3) translate(-50 -98)"/>' },
+    grape:   { rot: 0,  svg: '<path d="M50 4Q52 14 50 22" ' + S + ' stroke-width="3"/>' + [[28, 32], [50, 32], [72, 32], [39, 52], [61, 52], [50, 72], [50, 90]].map(function (c, i) { return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + (i > 4 ? 10 : 12) + '" ' + F + ' opacity="' + (0.95 - i * 0.04) + '"/>'; }).join('') + '<path d="M50 12C64 2 82 6 84 20C70 24 56 20 50 12Z" fill="var(--accent-2)" opacity=".7"/>' },
+    sand:    { rot: 0,  svg: '<circle cx="50" cy="38" r="24" ' + F + '/><path d="M0 72Q25 54 50 70T100 64V100H0Z" fill="var(--accent-2)" opacity=".55"/><path d="M0 86Q30 70 60 84T100 80V100H0Z" ' + F + ' opacity=".85"/>' },
+    lime:    { rot: 8,  svg: '<path d="M60 2L20 56H46L38 98L82 38H54Z" ' + F + '/><path d="M60 2L20 56H46L38 98L82 38H54Z" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width=".8"/>' },
+    sky:     { rot: 0,  svg: '<g ' + F + '><circle cx="32" cy="60" r="20"/><circle cx="56" cy="46" r="26"/><circle cx="78" cy="62" r="18"/><rect x="30" y="60" width="50" height="20" rx="10"/></g><circle cx="20" cy="22" r="8" fill="var(--accent-2)" opacity=".7"/>' }
   };
 
   /* ---------- state ---------- */

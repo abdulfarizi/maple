@@ -8,7 +8,17 @@
   'use strict';
   var root = document.documentElement;
   var UI_KEY = 'dig:ui';
-  var KNOWN = ['maple', 'flame', 'cyber', 'emerald', 'sakura', 'autumn', 'sunset', 'crimson', 'gold', 'forest', 'ocean', 'violet', 'mono', 'midnight', 'ice', 'candy', 'matcha'];
+  /* every theme: id, label, two swatch colours */
+  var THEME_LIST = [
+    ['maple', 'Maple 🍁', '#ff6a3d', '#ffb547'], ['flame', 'Flame', '#ff6a3d', '#ffb547'], ['cyber', 'Cyber', '#2fd6e8', '#8c7bff'], ['emerald', 'Emerald', '#22b783', '#b5e04f'],
+    ['sakura', 'Sakura', '#f2559f', '#ffa77d'], ['autumn', 'Autumn', '#f59e0b', '#ef4444'], ['sunset', 'Sunset', '#fb7185', '#fbbf24'], ['crimson', 'Crimson', '#ef4444', '#f97316'],
+    ['gold', 'Gold', '#facc15', '#f59e0b'], ['forest', 'Forest', '#84cc16', '#16a34a'], ['ocean', 'Ocean', '#3b82f6', '#22d3ee'], ['violet', 'Violet', '#a855f7', '#ec4899'],
+    ['mono', 'Mono', '#e5e7eb', '#9ca3af'], ['midnight', 'Midnight', '#6366f1', '#38bdf8'], ['ice', 'Ice', '#7dd3fc', '#e0f2fe'], ['candy', 'Candy', '#f472b6', '#c084fc'],
+    ['matcha', 'Matcha', '#a3b18a', '#dad7cd'],
+    ['aurora', 'Aurora', '#2dd4bf', '#a78bfa'], ['rose', 'Rose', '#f4a6b7', '#f9d5c5'], ['lava', 'Lava', '#ff3b00', '#ffcc00'], ['mint', 'Mint', '#6ee7b7', '#d9f99d'],
+    ['grape', 'Grape', '#c026d3', '#7c3aed'], ['sand', 'Sand', '#d6a76a', '#f5e1b8'], ['lime', 'Lime', '#c6ff00', '#00e676'], ['sky', 'Sky', '#38bdf8', '#a5b4fc']
+  ];
+  var KNOWN = THEME_LIST.map(function (t) { return t[0]; });
   var HEX = /^#[0-9a-f]{6}$/i;
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var haptic = function (ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 8); } catch (e) {} };
@@ -267,7 +277,27 @@
   }
   initPress();
 
-  window.dgUI = { theme: theme, vcard: vcard, qr: qr, toast: toast, copy: copyText, haptic: haptic };
+  /* ───────── bottom dock: fixed, centred, never covers content (the page reserves its height) ───────── */
+  var dockEl = null;
+  var dock = {
+    /* items: [{id, href, icon, label, active, link (SPA data-link), attrs}] */
+    set: function (items) {
+      if (!dockEl) {
+        dockEl = document.createElement('nav'); dockEl.className = 'dock'; dockEl.setAttribute('aria-label', 'Main');
+        document.body.appendChild(dockEl); document.body.classList.add('has-dock');
+        document.addEventListener('focusin', function (e) { if (e.target.matches && e.target.matches('input,textarea,select')) dockEl.classList.add('away'); });
+        document.addEventListener('focusout', function () { setTimeout(function () { var a = document.activeElement; if (!a || !a.matches || !a.matches('input,textarea,select')) dockEl.classList.remove('away'); }, 60); });
+      }
+      dockEl.innerHTML = items.map(function (it) {
+        return '<a class="dock-i' + (it.active ? ' on' : '') + '" href="' + esc(it.href) + '"' + (it.link ? ' data-link' : '') + ' data-dock="' + esc(it.id) + '"' + (it.active ? ' aria-current="page"' : '') + (it.attrs || '') + '>'
+          + '<i class="fa-solid ' + esc(it.icon) + '"></i><span>' + esc(it.label) + '</span></a>';
+      }).join('');
+    },
+    active: function (id) { if (!dockEl) return; dockEl.querySelectorAll('.dock-i').forEach(function (a) { var on = a.dataset.dock === id; a.classList.toggle('on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }); },
+    hide: function (v) { if (dockEl) dockEl.classList.toggle('gone', !!v); }
+  };
+
+  window.dgUI = { theme: theme, themes: THEME_LIST, vcard: vcard, qr: qr, dock: dock, toast: toast, copy: copyText, haptic: haptic };
   // first paint: theme colour of the browser bar
   try { theme.meta(); } catch (e) {}
 })();
