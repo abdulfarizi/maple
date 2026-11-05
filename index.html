@@ -2,7 +2,7 @@
 <html lang="en" data-theme="flame">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#0f0d0e" />
     <meta name="color-scheme" content="dark light" />
     <script src="/assets/maple-mode.js?v=3"></script>
@@ -620,7 +620,7 @@
         const r = await sb('/rest/v1/forum_dms?select=sender,sender_slug,sender_name,recipient,recipient_slug,recipient_name,body,read,created_at&or=(sender.eq.' + au.uid + ',recipient.eq.' + au.uid + ')&order=created_at.desc&limit=200', { token: T });
         if (gone(r)) return json({ threads: [], off: true });
         const rows = await r.json().catch(() => []), by = {};
-        rows.forEach((x) => { const me = x.sender === au.uid, k = me ? x.recipient : x.sender; const e = by[k] = by[k] || { slug: me ? x.recipient_slug : x.sender_slug, name: me ? x.recipient_name : x.sender_name, last: String(x.body).slice(0, 80), mine: me, at: x.created_at, unread: 0 }; if (!me && !x.read) e.unread++; });
+        rows.forEach((x) => { const me = x.sender === au.uid, k = me ? x.recipient : x.sender; const bd = String(x.body || ''), mt = /\n?\[\[(img|vid|aud):https:\/\/[^\]\s]{4,400}\]\]\s*$/.exec(bd), last = mt ? bd.slice(0, mt.index).slice(0, 80) + mt[0].replace(/^\n/, '\n').trimEnd() : bd.slice(0, 80); const e = by[k] = by[k] || { slug: me ? x.recipient_slug : x.sender_slug, name: me ? x.recipient_name : x.sender_name, last, mine: me, at: x.created_at, unread: 0 }; if (!me && !x.read) e.unread++; });
         return json({ threads: Object.values(by) });
       }
       if (rest[0] === 'dms' && slugOk(rest[1]) && rest.length === 2) {
