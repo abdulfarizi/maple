@@ -1,4 +1,4 @@
-/* Maple ID · shared UI helpers (used by the main app AND the Star card page)
+/* M-ID · shared UI helpers (used by the main app AND the Star card page)
  *   dgUI.theme   – site-wide theme that follows the theme picked in Studio
  *   dgUI.vcard   – proper .vcf builder + "save contact" (share sheet on phones, download on desktop)
  *   dgUI.qr      – restyled QR sheet (themed, rounded dots, logo, save as PNG, share)
@@ -16,7 +16,8 @@
     ['mono', 'Mono', '#e5e7eb', '#9ca3af'], ['midnight', 'Midnight', '#6366f1', '#38bdf8'], ['ice', 'Ice', '#7dd3fc', '#e0f2fe'], ['candy', 'Candy', '#f472b6', '#c084fc'],
     ['matcha', 'Matcha', '#a3b18a', '#dad7cd'],
     ['aurora', 'Aurora', '#2dd4bf', '#a78bfa'], ['rose', 'Rose', '#f4a6b7', '#f9d5c5'], ['lava', 'Lava', '#ff3b00', '#ffcc00'], ['mint', 'Mint', '#6ee7b7', '#d9f99d'],
-    ['grape', 'Grape', '#c026d3', '#7c3aed'], ['sand', 'Sand', '#d6a76a', '#f5e1b8'], ['lime', 'Lime', '#c6ff00', '#00e676'], ['sky', 'Sky', '#38bdf8', '#a5b4fc']
+    ['grape', 'Grape', '#c026d3', '#7c3aed'], ['sand', 'Sand', '#d6a76a', '#f5e1b8'], ['lime', 'Lime', '#c6ff00', '#00e676'], ['sky', 'Sky', '#38bdf8', '#a5b4fc'],
+    ['neon', 'Neon', '#ff2bd6', '#00f0ff'], ['galaxy', 'Galaxy', '#7c3aed', '#22d3ee'], ['coral', 'Coral', '#ff7e67', '#ffd1a9'], ['toxic', 'Toxic', '#39ff14', '#d4ff00'], ['ruby', 'Ruby', '#e11d48', '#fb7185'], ['sapphire', 'Sapphire', '#2563eb', '#60a5fa'], ['amber', 'Amber', '#ffb000', '#ff6a00'], ['storm', 'Storm', '#94a3b8', '#38bdf8'], ['bubblegum', 'Bubblegum', '#ff77e9', '#77f0ff'], ['cocoa', 'Cocoa', '#c08a5b', '#e8c9a0'], ['retro', 'Retro', '#ff6ec7', '#ffe66d'], ['tropical', 'Tropical', '#00d4aa', '#ffd23f']
   ];
   var KNOWN = THEME_LIST.map(function (t) { return t[0]; });
   var HEX = /^#[0-9a-f]{6}$/i;
@@ -100,7 +101,7 @@
     return chunks.join('\r\n ');
   }
   function splitName(full) {
-    var clean = String(full || '').replace(/[☆★✦✧]+/g, '').replace(/\s+/g, ' ').trim() || 'Maple ID';
+    var clean = String(full || '').replace(/[☆★✦✧]+/g, '').replace(/\s+/g, ' ').trim() || 'M-ID';
     var parts = clean.split(' ');
     if (parts.length < 2) return { fn: clean, family: '', given: clean };
     return { fn: clean, family: parts.pop(), given: parts.join(' ') };
@@ -109,7 +110,7 @@
     /* links: [{label, href}] – optional extra profile links (Instagram, YouTube …) */
     build: function (p, url, links) {
       var nm = splitName(p.name), L = [];
-      L.push('BEGIN:VCARD', 'VERSION:3.0', 'PRODID:-//Maple ID//Card//EN');
+      L.push('BEGIN:VCARD', 'VERSION:3.0', 'PRODID:-//M-ID//Card//EN');
       L.push('FN:' + vesc(nm.fn));
       L.push('N:' + vesc(nm.family) + ';' + vesc(nm.given) + ';;;');
       if (p.role && String(p.role).trim()) L.push('TITLE:' + vesc(String(p.role).trim()));
@@ -124,7 +125,7 @@
       if (phone) L.push('TEL;TYPE=CELL,VOICE:' + vesc(phone));
       if (mail) L.push('EMAIL;TYPE=INTERNET,PREF:' + vesc(mail));
       if (p.city || p.country) L.push('ADR;TYPE=HOME:;;;' + vesc(p.city || '') + ';;;' + vesc(p.country || ''));
-      L.push('item1.URL:' + url, 'item1.X-ABLabel:Maple ID');
+      L.push('item1.URL:' + url, 'item1.X-ABLabel:M-ID');
       extras.slice(0, 12).forEach(function (c, i) {
         var g = 'item' + (i + 2);
         L.push(g + '.URL:' + c.href, g + '.X-ABLabel:' + vesc(c.label || 'Link'));
@@ -161,9 +162,10 @@
     var size = n + M * 2, fg = o.fg || '#120b0c', eye = o.eye || fg, bg = o.bg || '#ffffff', mid = size / 2, hole = Math.max(5, Math.round(n * 0.2)) | 0;
     var inEye = function (x, y) { return (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7); };
     var inHole = function (x, y) { return Math.abs(x + M + .5 - mid) < hole / 2 + .6 && Math.abs(y + M + .5 - mid) < hole / 2 + .6; };
+    var hole0 = !(window.dgQRIcons && window.dgQRIcons.norm(o.icon, 'leaf') === 'none');
     var dots = '', on = function (x, y) { return x >= 0 && y >= 0 && x < n && y < n && d[y * n + x]; };
     for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) {
-      if (!on(x, y) || inEye(x, y) || inHole(x, y)) continue;
+      if (!on(x, y) || inEye(x, y) || (hole0 && inHole(x, y))) continue;
       dots += '<rect x="' + (x + M + .04) + '" y="' + (y + M + .04) + '" width=".92" height=".92" rx=".3"/>';
     }
     var eyes = '';
@@ -172,8 +174,10 @@
       eyes += '<rect x="' + (ex + .5) + '" y="' + (ey + .5) + '" width="6" height="6" rx=".4" fill="none" stroke="' + eye + '" stroke-width="1"/>'
         + '<rect x="' + (ex + 2) + '" y="' + (ey + 2) + '" width="3" height="3" rx=".6" fill="' + eye + '"/>';
     });
-    var s = hole * .62, lx = mid - s / 2, ly = mid - s / 2;
-    var logo = '<circle cx="' + mid + '" cy="' + mid + '" r="' + (hole / 2 + .3) + '" fill="' + bg + '"/>'
+    var s = hole * .62, lx = mid - s / 2, ly = mid - s / 2, ic = (window.dgQRIcons ? window.dgQRIcons.norm(o.icon, 'leaf') : 'leaf');
+    var logo = ic === 'none' ? '' : ic.indexOf('t:') === 0 ? '<circle cx="' + mid + '" cy="' + mid + '" r="' + (hole / 2 + .3) + '" fill="' + bg + '"/>' + window.dgQRIcons.draw(ic, mid, mid, hole * .72, fg)
+      : ic !== 'leaf' ? '<circle cx="' + mid + '" cy="' + mid + '" r="' + (hole / 2 + .3) + '" fill="' + bg + '"/><circle cx="' + mid + '" cy="' + mid + '" r="' + (hole / 2 - .35) + '" fill="url(#qg)"/>' + window.dgQRIcons.draw(ic, mid, mid, hole * .68, '#ffffff')
+      : '<circle cx="' + mid + '" cy="' + mid + '" r="' + (hole / 2 + .3) + '" fill="' + bg + '"/>'
       + '<circle cx="' + mid + '" cy="' + mid + '" r="' + (hole / 2 - .35) + '" fill="url(#qg)"/>'
       + '<path d="' + LEAF + '" fill="#fff" transform="translate(' + (mid - s * .42) + ' ' + (mid - s * .44) + ') scale(' + (s * .0084) + ')"/>';
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="geometricPrecision">'
@@ -208,7 +212,7 @@
       if (!window.dgQRLib) { toast('QR is not available'); return; }
       closeSheet();
       var url = o.url, name = o.name || '', L = o.labels || {};
-      var svg; try { svg = qrSvg(url, qrColors()); } catch (e) { toast('Could not make the QR code'); return; }
+      var cols = Object.assign(qrColors(), { icon: o.icon }), svg; try { svg = qrSvg(url, cols); } catch (e) { toast('Could not make the QR code'); return; }
       var host = String(url).replace(/^https?:\/\//, '');
       var s = document.createElement('div'); s.className = 'qs'; s.setAttribute('role', 'dialog'); s.setAttribute('aria-modal', 'true'); s.setAttribute('aria-label', L.title || 'QR code');
       s.innerHTML = '<div class="qs-back"></div>'
@@ -233,7 +237,7 @@
           await copyText(url); toast(L.copied || 'Link copied');
         } else if (k === 'save') {
           try {
-            var png = await svgToPng(qrSvg(url, qrColors()).replace('<svg ', '<svg width="1024" height="1024" '), 1024);
+            var png = await svgToPng(qrSvg(url, cols).replace('<svg ', '<svg width="1024" height="1024" '), 1024);
             var fname = (String(url).split('/').filter(Boolean).pop() || 'maple') + '-qr.png', f = null;
             try { f = new File([png], fname, { type: 'image/png' }); } catch (er) {}
             if (f && coarse() && navigator.canShare && navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f] }); return; } catch (er) { if (er && er.name === 'AbortError') return; } }
@@ -297,7 +301,7 @@
     hide: function (v) { if (dockEl) dockEl.classList.toggle('gone', !!v); }
   };
 
-  window.dgUI = { theme: theme, themes: THEME_LIST, vcard: vcard, qr: qr, dock: dock, toast: toast, copy: copyText, haptic: haptic };
+  window.dgUI = { theme: theme, themes: THEME_LIST, vcard: vcard, qr: qr, qrSvg: function (u, i) { return qrSvg(u, Object.assign(qrColors(), { icon: i })); }, dock: dock, toast: toast, copy: copyText, haptic: haptic };
   // first paint: theme colour of the browser bar
   try { theme.meta(); } catch (e) {}
 })();

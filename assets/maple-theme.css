@@ -12,33 +12,33 @@
 #fx-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 @media (prefers-reduced-motion:reduce){#fx-big .fx-float{animation:none}#fx-big .veins{stroke-dashoffset:0;animation:none}}
 
-html.fx-on,html.fx-on body{background-color:#0c0708}
+html.fx-on,html.fx-on body{background-color:var(--bg)}
 html.fx-on body{
   background:
     radial-gradient(60% 45% at 88% -8%,color-mix(in oklab,var(--accent) 22%,transparent),transparent 70%),
     radial-gradient(50% 40% at -6% 96%,color-mix(in oklab,var(--maple-red,var(--accent)) 22%,transparent),transparent 70%),
-    #0c0708;
+    var(--bg);
   background-attachment:fixed}
 html.fx-on .halo{display:none}
 html.fx-on .grid-bg{opacity:.1}
-html.fx-on .bio{color:#e9deda}
+html.fx-on .bio{color:var(--text)}
 
 /* surfaces: transparent + clean */
 html.fx-on .panel,html.fx-on .idcard{
-  background:linear-gradient(160deg,#ffffff0d,#ffffff04),#0c0708a6;
-  border:1px solid #ffffff1c;box-shadow:0 34px 80px -40px #000,inset 0 1px 0 #ffffff0f}
+  background:linear-gradient(160deg,color-mix(in srgb,var(--ink) 5.1%,transparent),color-mix(in srgb,var(--ink) 1.6%,transparent)),color-mix(in srgb,var(--bg) 65.1%,transparent);
+  border:1px solid color-mix(in srgb,var(--ink) 11%,transparent);box-shadow:0 34px 80px -40px #000,inset 0 1px 0 color-mix(in srgb,var(--ink) 5.9%,transparent)}
 html.fx-on .panel:before{opacity:.28}
 html.fx-on .live,html.fx-on .tile,html.fx-on .prod,html.fx-on .specs-box,html.fx-on .stats{
-  background:linear-gradient(#ffffff0b,#ffffff03),#0c07088c;border-color:#ffffff17;box-shadow:none}
+  background:linear-gradient(color-mix(in srgb,var(--ink) 4.3%,transparent),color-mix(in srgb,var(--ink) 1.2%,transparent)),color-mix(in srgb,var(--bg) 54.9%,transparent);border-color:color-mix(in srgb,var(--ink) 9%,transparent);box-shadow:none}
 html.fx-on .live:hover{border-color:var(--accent);box-shadow:0 12px 32px -14px var(--accent-glow)}
 html.fx-on .support,html.fx-on .cta-card{
-  border:1px solid #ffffff1f;
-  background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),#ffffff05 64%),#0c070880;
+  border:1px solid color-mix(in srgb,var(--ink) 12.2%,transparent);
+  background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),color-mix(in srgb,var(--ink) 2%,transparent) 64%),color-mix(in srgb,var(--bg) 50.2%,transparent);
   box-shadow:0 22px 46px -26px var(--accent-glow)}
 html.fx-on .icon-pill,html.fx-on .lang,html.fx-on .love,html.fx-on .chip,html.fx-on .reacts button,
 html.fx-on .reactions button,html.fx-on .like,html.fx-on .tile-copy,
-html.fx-on .actions .btn:not(.btn-accent){background:#ffffff0a;border-color:#ffffff1a}
-html.fx-on .modal-card,html.fx-on .music-panel{background:#120b0cf0;border-color:#ffffff1f}
+html.fx-on .actions .btn:not(.btn-accent){background:color-mix(in srgb,var(--ink) 3.9%,transparent);border-color:color-mix(in srgb,var(--ink) 10.2%,transparent)}
+html.fx-on .modal-card,html.fx-on .music-panel{background:color-mix(in srgb,var(--bg) 94.1%,transparent);border-color:color-mix(in srgb,var(--ink) 12.2%,transparent)}
 
 @media (hover:hover) and (pointer:fine){
   html.fx-on .panel,html.fx-on .idcard{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}

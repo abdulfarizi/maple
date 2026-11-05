@@ -1,4 +1,4 @@
-/* Maple ID · swipe pager + sliding dock highlight */
+/* Maple ID · swipe pager + sliding dock highlight + page layer */
 #app[hidden]{display:none}
 .pager{position:fixed;inset:0;z-index:1}
 .pager[hidden]{display:none}
@@ -8,11 +8,15 @@
 .pager-track.is-dragging{scroll-snap-type:none;scroll-behavior:auto}
 .pg{flex:0 0 100%;width:100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;
   overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scrollbar-width:none;
-  padding-top:var(--tb-h,64px);padding-bottom:var(--dock-space,100px);
-  opacity:calc(1 - var(--d,0) * .5)}
+  }
+/* spacers instead of padding: Chrome offsets sticky tabs / the save bar by a scroller's padding */
+.pg::before{content:'';display:block;height:var(--tb-h,64px)}
+.pg::after{content:'';display:block;height:var(--dock-space,100px)}
 .pg::-webkit-scrollbar{display:none}
-.pg-main{min-height:100%}
+.pg-main{min-height:calc(100% - var(--tb-h,64px) - var(--dock-space,100px))}
 .pg > .foot{padding-top:8px}
+body.pager-on .tabs{top:calc(var(--tb-h,64px) - 1px)}
+body.pager-on .preview{top:calc(var(--tb-h,64px) + 16px)}
 
 body.pager-on{padding-bottom:0;overflow:hidden;height:100dvh}
 body.pager-on .topbar{position:fixed;top:0;left:0;right:0;z-index:30}
@@ -20,15 +24,47 @@ body.pager-on .toast,body.pager-on #toast{bottom:calc(var(--dock-space) + 4px)!i
 /* page-specific floating bars only belong to their own page */
 body.pager-on:not([data-page=profile]) .savebar{opacity:0;pointer-events:none}
 
-/* the dock: three equal tabs with one glass highlight that slides between them */
+/* the layer: a public card or the Studio, sitting on top of the (still alive) strip */
+.pg-layer{position:fixed;inset:0;z-index:2;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;
+  scrollbar-width:none;background:var(--bg,var(--bg))}
+.pg-layer::-webkit-scrollbar{display:none}
+.pg-layer[hidden]{display:none}
+.pg-layer::before{content:'';display:block;height:var(--tb-h,64px)}
+.pg-layer::after{content:'';display:block;height:var(--dock-space,100px)}
+.pg-layer-main{min-height:calc(100% - var(--tb-h,64px) - var(--dock-space,100px))}
+.pg-layer.in{animation:pg-in .42s cubic-bezier(.22,1,.36,1) both;will-change:transform,opacity}
+.pg-layer.out{animation:pg-out .28s cubic-bezier(.4,0,.6,1) both;will-change:transform,opacity;pointer-events:none}
+.pg-layer.swap{animation:pg-swap .26s ease-out both}
+@keyframes pg-in{from{opacity:0;transform:translate3d(36px,0,0) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pg-out{from{opacity:1;transform:none}to{opacity:0;transform:translate3d(36px,0,0) scale(.985)}}
+@keyframes pg-swap{from{opacity:0}to{opacity:1}}
+/* full-page panes (a star card, or your own star card on Profile): no top bar spacer, no frame, no border */
+.pg.is-full{background:var(--bg);overflow:hidden}
+.pg.is-full::before,.pg.is-full::after{display:none}
+.pg.is-full > .pg-main{min-height:0;height:100%;position:relative}
+.pg .star-frame{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;z-index:1;
+  background:var(--bg);opacity:0;transition:opacity .28s ease}
+.pg .star-frame.ready{opacity:1}
+body.pager-on.star-mode .topbar{display:flex!important;opacity:0;visibility:hidden;pointer-events:none}
+body.pg-anim.pager-on.star-mode .topbar{transition:opacity .2s ease,visibility 0s .2s}
+body.pg-anim.pager-on .topbar{transition:opacity .2s ease,visibility 0s}
+body.pager-on.star-mode{background:var(--bg)}
+.pf-fab{position:absolute;right:14px;bottom:calc(var(--dock-space,100px) + 12px);z-index:3;display:flex;flex-direction:column;gap:8px}
+.pf-fab a,.pf-fab button{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--text);
+  background:color-mix(in srgb,var(--bg) 80%,transparent);border:1px solid color-mix(in srgb,var(--ink) 14.1%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 26px -10px #000}
+.pf-fab a:active,.pf-fab button:active{transform:scale(.94)}
+
+/* the dock: equal tabs (a fourth, "Card", appears while someone's link is open) with one glass highlight that slides between them */
 body.pager-on .dock{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
 body.pager-on .dock.dragging{cursor:grabbing}
 body.pager-on .dock-i{position:relative;z-index:1;flex:1 1 0;min-width:84px;
   background:none!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
 body.pager-on .dock-i.on{color:var(--accent)}
+body.pager-on .dock.four .dock-i{min-width:72px;padding:0 6px}
+body.pager-on .dock-i span{max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dock-ind{position:absolute;left:0;top:6px;bottom:6px;width:84px;border-radius:24px;pointer-events:none;z-index:0;
   background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 24%,transparent),color-mix(in srgb,var(--accent) 12%,transparent));
-  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 34%,transparent),inset 0 1px 0 #ffffff26,0 6px 22px -8px var(--accent-glow,transparent);
-  transform-origin:center;will-change:transform,width}
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 34%,transparent),inset 0 1px 0 color-mix(in srgb,var(--ink) 14.9%,transparent),0 6px 22px -8px var(--accent-glow,transparent);
+  transform-origin:center;will-change:transform,width;transition:opacity .22s ease}
 .dock.dragging .dock-ind{filter:brightness(1.15)}
-@media (prefers-reduced-motion:reduce){.pager-track{scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){.pager-track{scroll-behavior:auto}.pg-layer.in,.pg-layer.out,.pg-layer.swap{animation:none}}

@@ -1,4 +1,4 @@
-/* Maple ID · homepage effects: drifting maple leaves, card tilt, live theme picker.
+/* M-ID · homepage effects: drifting maple leaves, card tilt, live theme picker.
  * Called from the home render as window.mapleHome.mount(). Cleans itself up when the home page is left. */
 (function () {
   var LEAF = 'M50 2L57 18L64 13L62 34L80 24L76 40L96 36L84 54L90 60L62 70L64 78L53 76L53 98L47 98L47 76L36 78L38 70L10 60L16 54L4 36L24 40L20 24L38 34L36 13L43 18Z';
@@ -44,8 +44,11 @@
     ctx.fill(path);
     ctx.restore();
   }
+  var flip = 0;
   function frame() {
-    if (!document.getElementById('maple-home')) return teardown();
+    if ((flip ^= 1)) { raf = requestAnimationFrame(frame); return; }
+    if (!document.getElementById('maple-home') || (window.dgPager && !dgPager.active())) return teardown();
+    if (window.dgPager && dgPager.layered && dgPager.layered()) { raf = requestAnimationFrame(frame); return; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     for (var i = 0; i < parts.length; i++) {
@@ -87,7 +90,7 @@
     document.body.insertBefore(cv, document.body.firstChild);
     ctx = cv.getContext('2d');
     readPalette(); size();
-    var n = W < 700 ? 14 : 28;
+    var n = W < 700 ? 12 : 22;
     parts = Array.from({ length: n }, function () { return spawn({}, true); });
     window.addEventListener('resize', size);
     document.addEventListener('visibilitychange', onVis);
@@ -122,6 +125,6 @@
   }
 
   window.mapleHome = {
-    mount: function () { leaves(); tilt(); themes(); }
+    mount: function () { if (!window.__mapleLite) leaves(); tilt(); themes(); }
   };
 })();

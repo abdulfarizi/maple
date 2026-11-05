@@ -1,4 +1,4 @@
-/* Maple ID · homepage "Who's on Maple ID": creator finder + leaderboard.
+/* M-ID · homepage "Who's on M-ID": creator finder + leaderboard.
  * Data comes from /api/directory/stats (light list of slugs + numbers) and /api/directory/cards
  * (names/avatars for just the rows being shown). Creators can opt out in Studio → Profile → Community. */
 (function () {
@@ -64,7 +64,7 @@
       more.hidden = st.done;
       if (count) count.innerHTML = st.q
         ? '<b>' + fmt(st.rank) + '</b> match' + (st.rank === 1 ? '' : 'es') + (st.done ? '' : '+')
-        : (st.total ? '<b>' + fmt(st.total) + '</b> creator' + (st.total === 1 ? ' is' : 's are') + ' on Maple ID. Find one, or see who’s on top.' : 'Be the first creator on Maple ID.');
+        : (st.total ? '<b>' + fmt(st.total) + '</b> creator' + (st.total === 1 ? ' is' : 's are') + ' on M-ID. Find one, or see who’s on top.' : 'Be the first creator on M-ID.');
     } catch (e) {
       if (reset) list.innerHTML = '<li class="ex-empty">Couldn’t load the list right now.<br><button type="button" class="btn btn-sm" data-ex-retry>Try again</button></li>';
       if (count) count.textContent = 'See who’s already here.';

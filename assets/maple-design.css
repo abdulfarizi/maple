@@ -1,0 +1,126 @@
+/* ═════════════════════════════════════════════════════════════════════
+   Maple ID · design system v26  (loaded last — it is the look of the site)
+   · one set of tokens, two palettes: light (warm paper) and dark (warm ink)
+   · user card themes only set accent colours, so every theme works in both modes
+   · motion rules: transform + opacity only, no blur over scrolling content
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* 1 ─ tokens */
+:root{color-scheme:dark;--r-sm:12px;--r-md:16px;--r-lg:22px;--r-xl:28px;--ease:cubic-bezier(.22,1,.36,1);--ease-io:cubic-bezier(.4,0,.2,1);
+  --on-accent:#1a0d08;--grad-accent:linear-gradient(135deg,var(--accent-2,var(--accent)),var(--accent))}
+:root,:root[data-mode=dark]{
+  --bg:#0f0d0e;--bg-2:#171314;--panel:#181415;--panel-solid:#181415;--ink:#ffffff;
+  --line:rgba(255,255,255,.09);--line-strong:rgba(255,255,255,.17);
+  --text:#f6f1ee;--muted:#ada39e;--dim:#766c68;--good:#3ccf7a;--bad:#ff6b6b;
+  --accent-t:var(--accent);--scrim:rgba(6,4,5,.62);
+  --shadow-sm:0 1px 0 rgba(255,255,255,.04) inset,0 6px 16px -10px rgba(0,0,0,.7);
+  --shadow:0 1px 0 rgba(255,255,255,.05) inset,0 22px 44px -26px rgba(0,0,0,.8)}
+:root[data-mode=light]{color-scheme:light;
+  --bg:#faf6f2;--bg-2:#f3ece6;--panel:#ffffff;--panel-solid:#ffffff;--ink:#1d1411;
+  --line:rgba(40,22,14,.1);--line-strong:rgba(40,22,14,.19);
+  --text:#1d1411;--muted:#675850;--dim:#9a8b83;--good:#12804a;--bad:#c4302b;
+  --accent-t:color-mix(in srgb,var(--accent) 58%,#1d1411);--scrim:rgba(40,22,14,.38);
+  --shadow-sm:0 1px 2px rgba(70,35,18,.07),0 6px 14px -10px rgba(70,35,18,.25);
+  --shadow:0 1px 2px rgba(70,35,18,.06),0 20px 40px -24px rgba(70,35,18,.32)}
+/* bright accents get dark label text, deep ones get light text */
+[data-theme=ruby],[data-theme=sapphire],[data-theme=galaxy],[data-theme=grape],[data-theme=violet],[data-theme=crimson],[data-theme=ocean]{--on-accent:#fff}
+
+/* 2 ─ base */
+html{background:var(--bg);-webkit-text-size-adjust:100%;scroll-behavior:auto}
+body{background:radial-gradient(70% 38% at 88% -6%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 72%),radial-gradient(60% 34% at -8% 4%,color-mix(in srgb,var(--accent-2,var(--accent)) 8%,transparent),transparent 70%),var(--bg);
+  color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,.brand{font-family:var(--display);letter-spacing:-.02em}
+a,button,.btn,.dock-i,.tab,[role=button],label,input,select,textarea{touch-action:manipulation}
+::selection{background:color-mix(in srgb,var(--accent) 30%,transparent)}
+.grain,#fx-big:before{display:none!important}               /* full-screen noise = a paint on every frame; gone */
+.sprite{position:absolute;width:0;height:0}
+
+/* 3 ─ top bar */
+.topbar{background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-bottom:1px solid var(--line);padding:12px clamp(14px,4vw,40px);gap:12px;min-height:60px}
+html[data-glass=on] .topbar{background:color-mix(in srgb,var(--bg) 90%,transparent)}
+.brand{gap:10px;font-size:19px;font-weight:700;letter-spacing:-.025em}
+.brand .leaf-ico{width:30px;height:30px;padding:5px;border-radius:9px;background:linear-gradient(140deg,#ff8a3d,#f0502b 60%,#b01c2c);box-shadow:0 6px 14px -8px #f0502b;filter:none;fill:#fff8f2!important}
+.brand b{color:var(--accent-t);font-weight:700}
+.tb-end{display:flex;align-items:center;gap:10px}
+.nav-link{color:var(--muted);font-weight:500;transition:color .15s}.nav-link:hover{color:var(--text)}
+
+/* 4 ─ mode switch: styles + the circular reveal live in maple-mode.css */
+.mode-switch:focus-visible,.btn:focus-visible,.dock-i:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* 5 ─ buttons, fields, tabs, surfaces */
+.btn{height:46px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);color:var(--text);font-weight:600;letter-spacing:-.005em;box-shadow:var(--shadow-sm);transition:transform .16s var(--ease),border-color .16s,background-color .16s}
+.btn:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}.btn:active{transform:scale(.97)}
+.btn-accent{background:var(--grad-accent);border-color:transparent;color:var(--on-accent);box-shadow:0 12px 26px -14px var(--accent-glow,var(--accent))}
+.btn-accent:hover{border-color:transparent;filter:brightness(1.05)}
+.btn-sm{height:36px;border-radius:12px}
+.field input,.field select,.field textarea,.row input,.row select,.prefix-input input,input[type=text],input[type=email],input[type=password],input[type=url],input[type=search],input[type=number],textarea,select{background:var(--bg-2);color:var(--text);border:1px solid var(--line);border-radius:14px;transition:border-color .15s,box-shadow .15s,background-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus,input:focus,textarea:focus,select:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 17%,transparent)}
+::placeholder{color:var(--dim);opacity:1}
+.field>span,.field label,label.field>span{color:var(--muted);font-size:13px;font-weight:500}
+.hint,.panel-hint,.lede{color:var(--muted)}
+.eyebrow{color:var(--muted)}.eyebrow .leaf-ico{color:var(--accent-t)}
+.tabs{background:color-mix(in srgb,var(--bg) 92%,transparent);border-bottom:1px solid var(--line)}
+.tab{color:var(--muted);border-radius:999px;font-weight:600;transition:color .15s,background-color .15s}
+.tab:hover{color:var(--text)}
+.tab.active,.editor .tab.active{background:var(--accent);color:var(--on-accent);box-shadow:0 8px 18px -10px var(--accent-glow,var(--accent))}
+.panel,.note-card,.product-row,.shop-item,.sec-head+*{border-color:var(--line)}
+.panel,.note-card,.product-row{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-sm)}
+.idcard{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:26px}
+.steps{border-radius:var(--r-lg)}.steps>*{background:var(--panel)}
+.pill{background:color-mix(in srgb,var(--accent) 12%,var(--panel));border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));color:var(--text);border-radius:999px}
+.toast{background:var(--text);color:var(--bg);box-shadow:var(--shadow)}
+.foot{color:var(--dim)}
+.skeleton-card,.skeleton-line{animation:sk 1.4s linear infinite}
+hr{border:0;border-top:1px solid var(--line)}
+/* accent used as TEXT needs more contrast on paper */
+:root[data-mode=light] :is(.eyebrow b,.nav-link.on,.dock-i.on,.fm-eyebrow,.fm-tag,.fm-btn.on,.linkish,.hint a,.slug-status.ok,.tile-copy){color:var(--accent-t)}
+
+/* 6 ─ dock (bottom navigation): solid, no blur, transform-only motion */
+.dock{background:color-mix(in srgb,var(--panel) 96%,transparent)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important;border-radius:30px;}
+html[data-glass=on] .dock{background:color-mix(in srgb,var(--panel) 96%,transparent)!important}
+.dock-i{color:var(--muted);transition:color .2s var(--ease-io);font-weight:600}
+.dock-i:hover{color:var(--text)}.dock-i.on,.dock-i.on:hover{color:var(--accent-t)}
+.dock-i i{transition:transform .22s var(--ease)}
+.dock-i.on{background:none;box-shadow:none}
+.dock-ind{left:0;top:6px;bottom:6px;border-radius:24px;backface-visibility:hidden;transition:opacity .2s;
+  background:color-mix(in srgb,var(--accent) 17%,transparent)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent)!important;filter:none!important}
+
+/* 7 ─ panes: layered + isolated so scrolling one never repaints the others */
+.pg{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.pg-layer{background:var(--bg)}
+.pg-layer.in{animation-duration:.34s}.pg-layer.out{animation-duration:.22s}
+.pg.is-full,.pg .star-frame,body.pager-on.star-mode{background:var(--bg)}
+.pf-fab a,.pf-fab button{background:color-mix(in srgb,var(--panel) 94%,transparent);border-color:var(--line);color:var(--text);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:var(--shadow-sm)}
+
+/* 8 ─ forum (also styled from maple-forum.js; these add mode-awareness + smooth scrolling) */
+.fm-card,.fm-start{background:var(--panel)!important;border-color:var(--line)!important;box-shadow:var(--shadow-sm);border-radius:20px!important}
+.fm-card{content-visibility:auto;contain-intrinsic-size:auto 180px}
+.fm-card.pin{border-color:var(--accent)!important}
+.fm input,.fm textarea,.fm select{background:var(--bg-2)!important;border-color:var(--line)!important}
+.fm-btn{background:var(--panel)!important;border-color:var(--line)!important;color:var(--text)!important;transition:transform .14s var(--ease),border-color .14s}
+.fm-btn:active{transform:scale(.96)}
+.fm-btn.pri{background:var(--accent)!important;color:var(--on-accent)!important;border-color:transparent!important}
+.fm-btn.on{border-color:var(--accent)!important}
+.fm-av{overflow:hidden;background-size:cover;background-position:center;box-shadow:0 0 0 1px var(--line)}
+.fm-av img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* 9 ─ performance + accessibility */
+.pg,.pg-layer,.pager-track,.fm{scrollbar-width:none}
+img{content-visibility:auto}
+@media (hover:none){.btn:hover{border-color:var(--line)}.dock-i:hover{color:var(--muted)}.dock-i.on:hover{color:var(--accent-t)}}
+html[data-lite] #fx-big .fx-float{animation:none}
+html[data-lite] *{scroll-behavior:auto!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* 10 ─ login / sign-up panel: it was painted with fixed dark colours, so light mode showed a black box with unreadable text */
+.auth{background:var(--panel)!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
+.auth-tabs{background:var(--bg-2)!important;border:1px solid var(--line)}
+.auth-tabs button{color:var(--muted)}
+.auth-tabs [aria-selected=true]{background:var(--panel-solid)!important;color:var(--text)!important;
+  box-shadow:0 1px 2px rgba(70,35,18,.14),inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)!important}
+:root[data-mode=dark] .auth-tabs [aria-selected=true]{background:color-mix(in srgb,var(--accent) 16%,var(--panel-solid))!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)!important}
+.auth .field label,.auth .prefix-input span{color:var(--muted)}
+.prefix-input{background:var(--bg-2)}
+.claim{background:var(--panel)!important;border-color:var(--line)!important}
+.claim:focus-within{box-shadow:0 0 0 4px color-mix(in oklab,var(--accent) 18%,transparent),var(--shadow)}
+.steps>div{background:var(--panel)!important}

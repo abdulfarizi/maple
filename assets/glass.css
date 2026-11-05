@@ -3,10 +3,10 @@
  * Same clean, see-through language as the home page: faint fills, thin edges, a little blur. No heavy shine.
  */
 [data-glass=on]{
-  --g-fill:linear-gradient(#ffffff0f,#ffffff05);
-  --g-fill-soft:linear-gradient(160deg,#ffffff0d,#ffffff04);
-  --g-edge:#ffffff1f;
-  --g-rim:inset 0 1px 0 #ffffff10;
+  --g-fill:linear-gradient(color-mix(in srgb,var(--ink) 5.9%,transparent),color-mix(in srgb,var(--ink) 2%,transparent));
+  --g-fill-soft:linear-gradient(160deg,color-mix(in srgb,var(--ink) 5.1%,transparent),color-mix(in srgb,var(--ink) 1.6%,transparent));
+  --g-edge:color-mix(in srgb,var(--ink) 12.2%,transparent);
+  --g-rim:inset 0 1px 0 color-mix(in srgb,var(--ink) 6.3%,transparent);
   --g-drop:0 18px 40px -26px #000c;
 }
 
@@ -23,40 +23,40 @@ html[data-glass=on] .shell,html[data-glass=on] main{position:relative;z-index:1}
 html[data-glass=on] .panel{background:var(--g-fill-soft);border-color:var(--g-edge);box-shadow:0 30px 70px -36px #000,var(--g-rim)}
 html[data-glass=on] .panel:before{opacity:.3}
 html[data-glass=on] .live,html[data-glass=on] .tile,html[data-glass=on] .prod,
-html[data-glass=on] .specs-box,html[data-glass=on] .stats{background:var(--g-fill);border-color:#ffffff17;box-shadow:none}
+html[data-glass=on] .specs-box,html[data-glass=on] .stats{background:var(--g-fill);border-color:color-mix(in srgb,var(--ink) 9%,transparent);box-shadow:none}
 html[data-glass=on] .live:hover{box-shadow:0 12px 32px -14px var(--accent-glow);border-color:var(--accent)}
 html[data-glass=on] .support,html[data-glass=on] .cta-card{
   border:1px solid var(--g-edge);
-  background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),#ffffff05 64%);
+  background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),color-mix(in srgb,var(--ink) 2%,transparent) 64%);
   box-shadow:0 22px 46px -26px var(--accent-glow)}
 html[data-glass=on] .icon-pill,html[data-glass=on] .lang,html[data-glass=on] .love,html[data-glass=on] .chip,
 html[data-glass=on] .reacts button,html[data-glass=on] .actions .btn:not(.btn-accent),
-html[data-glass=on] .tile-copy,html[data-glass=on] .qty{background:#ffffff0a;border-color:#ffffff1a}
+html[data-glass=on] .tile-copy,html[data-glass=on] .qty{background:color-mix(in srgb,var(--ink) 3.9%,transparent);border-color:color-mix(in srgb,var(--ink) 10.2%,transparent)}
 html[data-glass=on] .love.liked,html[data-glass=on] .reacts button.done,html[data-glass=on] .chip-accent{
-  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 30%,transparent),#ffffff06)}
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 30%,transparent),color-mix(in srgb,var(--ink) 2.4%,transparent))}
 html[data-glass=on] .ptabs{border-bottom-color:var(--g-edge)}
-html[data-glass=on] .modal-card,html[data-glass=on] .music-panel{background:#120b0cf0;border-color:var(--g-edge)}
+html[data-glass=on] .modal-card,html[data-glass=on] .music-panel{background:color-mix(in srgb,var(--bg) 94.1%,transparent);border-color:var(--g-edge)}
 html[data-glass=on] .stats dt,html[data-glass=on] .tile-no,html[data-glass=on] .support-via,
-html[data-glass=on] .section-label,html[data-glass=on] .handle,html[data-glass=on] .topbar{color:#ffffffa8}
-html[data-glass=on] .bio,html[data-glass=on] .support-desc,html[data-glass=on] .tile-sub,html[data-glass=on] .shop-head small{color:#ffffffc2}
+html[data-glass=on] .section-label,html[data-glass=on] .handle,html[data-glass=on] .topbar{color:color-mix(in srgb,var(--ink) 65.9%,transparent)}
+html[data-glass=on] .bio,html[data-glass=on] .support-desc,html[data-glass=on] .tile-sub,html[data-glass=on] .shop-head small{color:color-mix(in srgb,var(--ink) 76.1%,transparent)}
 
 /* ---------- basic card + Studio preview ---------- */
 [data-glass=on] .idcard{background:var(--g-fill-soft);border-color:var(--g-edge);box-shadow:0 34px 80px -40px #000,var(--g-rim)}
 [data-glass=on] .tile,[data-glass=on] .like,[data-glass=on] .reactions button,
-[data-glass=on] .actions .btn:not(.btn-accent){background:var(--g-fill);border-color:#ffffff1a;box-shadow:none}
-[data-glass=on] .support{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),#ffffff05 64%);border:1px solid var(--g-edge)}
+[data-glass=on] .actions .btn:not(.btn-accent){background:var(--g-fill);border-color:color-mix(in srgb,var(--ink) 10.2%,transparent);box-shadow:none}
+[data-glass=on] .support{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 22%,transparent),color-mix(in srgb,var(--ink) 2%,transparent) 64%);border:1px solid var(--g-edge)}
 .preview-inner[data-glass=on]{
   padding:14px;border-radius:30px;
   background:
     radial-gradient(60% 40% at 90% 0%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 72%),
     radial-gradient(60% 40% at 0% 100%,color-mix(in srgb,var(--maple-red,var(--accent)) 22%,transparent),transparent 72%),
-    #0c0708
+    var(--bg)
 }
 
 /* frosted amount: Studio → Look → Clear glass → Frost slider */
 html[data-glass=on] .panel,html[data-glass=on] .idcard,[data-glass=on] .idcard,html[data-glass=on] .modal-card,html[data-glass=on] .music-panel{
   -webkit-backdrop-filter:blur(calc(var(--gb,14)*1px)) saturate(150%);backdrop-filter:blur(calc(var(--gb,14)*1px)) saturate(150%);
-  background-color:color-mix(in srgb,#0c0708 calc(4% + var(--gb,14)*1.4%),transparent)}
+  background-color:color-mix(in srgb,var(--bg) calc(4% + var(--gb,14)*1.4%),transparent)}
 html[data-glass=on] .panel,html[data-glass=on] .idcard,[data-glass=on] .idcard{background-image:var(--g-fill-soft)}
 @media (prefers-reduced-transparency:reduce){
   html[data-glass=on] .panel,[data-glass=on] .idcard{-webkit-backdrop-filter:none;backdrop-filter:none}

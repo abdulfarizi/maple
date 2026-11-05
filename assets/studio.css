@@ -1,0 +1,89 @@
+/* Maple ID · Studio — refined editor. Pure restyle of the existing markup + a mobile Edit/Preview switch. */
+.studio{max-width:1180px;margin:0 auto;padding:6px 18px 24px}
+.studio.studio-enter{animation:st-in .38s cubic-bezier(.22,1,.36,1) both}
+@keyframes st-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* link bar: reads like an address bar */
+.studio .linkbar{border:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 10%,var(--panel)),var(--panel) 60%);
+  border-radius:22px;padding:14px 16px 14px 20px;margin-bottom:18px;gap:12px}
+.studio .linkbar-url .eyebrow{font-size:10px}
+.studio .linkbar-url a{font-size:clamp(15px,2.2vw,20px);margin-top:4px}
+.studio .linkbar-actions .btn{height:38px;border-radius:12px}
+
+.studio-grid{grid-template-columns:minmax(0,1fr) 392px;gap:28px}
+
+/* section tabs: one segmented control */
+.editor .tabs{gap:4px;padding:5px;margin:0 0 16px;border:1px solid var(--line);border-radius:16px;
+  background:color-mix(in srgb,var(--bg) 88%,#fff 4%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.editor .tab{flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;
+  height:40px;padding:0 14px;border:0;border-radius:12px;background:transparent;color:var(--muted);font-size:13px;font-weight:500;
+  transition:background .25s,color .25s,transform .15s}
+.editor .tab i{font-size:13px;opacity:.85}
+.editor .tab:hover{color:var(--text)}
+.editor .tab:active{transform:scale(.97)}
+.editor .tab.active{background:var(--accent);color:#fff;box-shadow:0 6px 18px -8px var(--accent-glow,var(--accent))}
+.tab-panel:not([hidden]){animation:st-panel .3s cubic-bezier(.22,1,.36,1) both}
+@keyframes st-panel{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* sections as quiet panels, legend as a heading */
+.editor fieldset{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:20px 20px 8px;margin:0 0 14px;min-width:0}
+.editor legend{float:left;width:100%;padding:0 0 14px;margin:0;font-size:15px;font-weight:600;letter-spacing:.01em;color:var(--text)}
+.editor legend + *{clear:both}
+.editor legend small{font-weight:400}
+.field label{font-size:12px;font-weight:500;color:var(--muted)}
+.field input,.field select,.field textarea,.row input,.row select{background:color-mix(in srgb,var(--bg) 92%,#fff 3%);border-radius:12px;padding:12px 14px;
+  transition:border-color .2s,box-shadow .2s,background .2s}
+.field input:focus,.field textarea:focus,.field select:focus,.row input:focus,.row select:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.field input::placeholder,.field textarea::placeholder{color:var(--dim)}
+.row{border-radius:14px}
+.toggle{padding:10px 12px;margin-bottom:8px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--ink) 2%,transparent);transition:border-color .2s,background .2s}
+.toggle:has(input:checked){border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.swatch{border-radius:12px;padding:9px 13px;transition:transform .15s,border-color .2s}
+.swatch:active{transform:scale(.96)}
+.layout-opt span{border-radius:16px;transition:border-color .2s,background .2s,transform .15s}
+.layout-opt:active span{transform:scale(.985)}
+.product-row{border-radius:16px}
+
+/* save bar: floats at the bottom of the editor, above the dock */
+.editor .savebar{position:sticky;bottom:calc(var(--dock-space,100px) - 8px);z-index:8;margin-top:18px;border-radius:18px;padding:10px 10px 10px 16px;
+  background:color-mix(in srgb,var(--bg) 82%,#000 0%);border:1px solid var(--line);box-shadow:0 18px 40px -18px rgba(0,0,0,.8);
+  backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);gap:10px;transition:border-color .25s,box-shadow .25s}
+.editor .savebar:has(.save-state.dirty){border-color:color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:0 18px 40px -18px var(--accent-glow,rgba(0,0,0,.8))}
+.save-state{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:13px}
+.save-state::before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+.save-state.dirty::before{animation:st-pulse 1.6s ease-in-out infinite}
+@keyframes st-pulse{50%{box-shadow:0 0 0 6px transparent;opacity:.5}0%,100%{box-shadow:0 0 0 0 currentColor}}
+.editor .savebar .btn{height:40px;border-radius:12px}
+
+/* live preview: a phone */
+.studio .preview{top:calc(var(--tb-h,64px) + 14px)}
+.preview .eyebrow{margin:0 4px 10px}
+.preview #preview{position:relative;border:1px solid var(--line-strong,var(--line));border-radius:38px;padding:10px;
+  background:linear-gradient(160deg,var(--panel-solid),var(--bg));box-shadow:0 30px 70px -30px rgba(0,0,0,.9),inset 0 0 0 1px color-mix(in srgb,var(--ink) 5.1%,transparent);overflow:hidden}
+.preview #preview::before{content:'';display:block;width:84px;height:5px;margin:2px auto 10px;border-radius:5px;background:color-mix(in srgb,var(--ink) 12.2%,transparent)}
+.preview #preview > iframe{display:block;width:100%;height:min(760px,calc(100dvh - var(--tb-h,64px) - var(--dock-space,100px) - 120px))!important;min-height:420px;border-radius:26px!important;background:var(--bg)}
+.preview #preview > .preview-inner{max-height:min(760px,calc(100dvh - var(--tb-h,64px) - var(--dock-space,100px) - 120px));min-height:420px;overflow:auto;border-radius:26px;scrollbar-width:none}
+.preview #preview > .preview-inner::-webkit-scrollbar{display:none}
+
+/* Profile page: the card is shown exactly like the public page, at its full height */
+.pf-star{margin-bottom:14px}
+.pf-star > iframe.star-embed{display:block;width:100%;height:760px;border:0;border-radius:26px;background:var(--bg);transition:height .25s ease}
+
+/* mobile: one column, Edit / Preview switch */
+.st-switch{display:none}
+@media (max-width:980px){
+  .studio{padding:4px 12px 24px}
+  .studio-grid{grid-template-columns:1fr;gap:0}
+  .studio[data-view=preview] .editor{display:none}
+  .studio:not([data-view=preview]) .preview{display:none}
+  .studio .preview{position:static}
+  .preview #preview > iframe{height:calc(100dvh - var(--tb-h,64px) - var(--dock-space,100px) - 150px)!important}
+  .st-switch{display:flex;position:sticky;top:calc(var(--tb-h,64px) + 2px);z-index:7;gap:4px;padding:4px;margin:0 0 12px;border:1px solid var(--line);border-radius:14px;
+    background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .st-switch button{flex:1;height:36px;border-radius:10px;font-size:13px;font-weight:500;color:var(--muted);text-align:center;transition:background .25s,color .25s}
+  .st-switch button.on{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+  .editor .tabs{position:sticky;top:calc(var(--tb-h,64px) + 52px);overflow-x:auto}
+  .editor .tab{flex:0 0 auto;padding:0 12px}
+  .editor fieldset{padding:16px 14px 6px;border-radius:18px}
+}
+@media (prefers-reduced-motion:reduce){.studio.studio-enter,.tab-panel:not([hidden]){animation:none}.save-state.dirty::before{animation:none}}

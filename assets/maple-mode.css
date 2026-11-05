@@ -1,0 +1,34 @@
+/* Maple ID · mode switch + the circular reveal. Loaded by the site and by the owner card. */
+
+/* the button */
+.mode-switch{position:relative;width:38px;height:38px;flex:none;border-radius:50%;border:1px solid var(--line-strong,var(--line));background:var(--panel-solid,var(--panel,transparent));color:var(--text);display:grid;place-items:center;padding:0;cursor:pointer;
+  box-shadow:var(--shadow-sm,none);transition:transform .2s var(--ease,ease),border-color .2s,color .2s}
+.mode-switch:hover{border-color:var(--accent,var(--line-strong))}
+.mode-switch:active{transform:scale(.9)}
+.mode-switch svg{grid-area:1/1;width:19px;height:19px;transition:transform .5s var(--ease,ease),opacity .28s}
+:root[data-mode=dark] .ms-moon,:root:not([data-mode]) .ms-moon{opacity:0;transform:rotate(-80deg) scale(.3)}
+:root[data-mode=light] .ms-sun{opacity:0;transform:rotate(80deg) scale(.3)}
+.mode-switch.pop{animation:ms-pop .55s var(--ease,cubic-bezier(.22,1,.36,1))}
+@keyframes ms-pop{0%{transform:scale(1)}30%{transform:scale(.7)}65%{transform:scale(1.14)}100%{transform:scale(1)}}
+.mode-switch:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* inside the owner card's pill row */
+.top-controls .mode-switch{width:30px;height:30px;background:color-mix(in srgb,var(--bg) 75%,transparent);box-shadow:none}
+.top-controls .mode-switch svg{width:15px;height:15px}
+
+/* the swap: every transition off for the instant the palette changes, so nothing fades half-way */
+html.mode-swap *:not(.mode-switch):not(.mode-switch *),html.mode-swap *::before,html.mode-swap *::after{transition:none!important}
+
+/* the reveal: the new look is clipped to a circle that grows from the tapped button (JS drives the clip-path) */
+::view-transition-group(root){animation:none}
+html.mode-vt::view-transition-old(root),html.mode-vt::view-transition-new(root){animation:none;mix-blend-mode:normal;display:block}
+html.mode-vt::view-transition-old(root){z-index:1}
+html.mode-vt::view-transition-new(root){z-index:2}
+/* the tapped button leaves the page snapshot and zooms on its own, so it is the visible origin of the circle */
+html.mode-vt .mode-switch.pop{view-transition-name:mode-btn;animation:none}
+::view-transition-group(mode-btn){animation-duration:.45s;animation-timing-function:cubic-bezier(.22,1,.36,1)}
+::view-transition-old(mode-btn),::view-transition-new(mode-btn){mix-blend-mode:normal;animation-duration:.5s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-fill-mode:both}
+::view-transition-old(mode-btn){animation-name:ms-out}
+::view-transition-new(mode-btn){animation-name:ms-in}
+@keyframes ms-out{to{opacity:0;transform:scale(.35) rotate(-90deg)}}
+@keyframes ms-in{from{opacity:0;transform:scale(.35) rotate(90deg)}}
+@media (prefers-reduced-motion:reduce){.mode-switch.pop{animation:none}}

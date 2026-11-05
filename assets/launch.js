@@ -41,6 +41,10 @@
   };
   var ALIAS = { 'Call of Duty': 'Call of Duty: Mobile' };
 
+  function playIntent(path, web) {
+    return 'intent://' + path + '#Intent;scheme=market;package=com.android.vending;S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
+  }
+
   var api = {
     supported: ANDROID || IOS,
     // overridable (tests): goes to the top window so the link isn't blocked inside the card frame
@@ -55,7 +59,10 @@
           api.navigate('intent://#Intent;scheme=' + g.scheme + ';package=' + g.pkg + ';S.browser_fallback_url=' + encodeURIComponent(web) + ';end');
           return 'app';
         }
-        api.navigate(g.pkg ? 'market://details?id=' + g.pkg : 'market://search?q=' + q + '&c=apps');
+        // `market://` is answered by WHICHEVER store app owns it (Mi GetApps on Xiaomi, AppGallery on Huawei, ...), and each
+        // store lists its own build of a game (Mobile Legends ships under several package ids). Pin it to Google Play so
+        // everyone lands on the same listing; if Play isn't installed the browser fallback opens the Play web page.
+        api.navigate(g.pkg ? playIntent('details?id=' + g.pkg, web) : playIntent('search?q=' + q + '&c=apps', web));
         return 'store';
       }
       var store = g.ios ? 'itms-apps://apps.apple.com/app/id' + g.ios : 'itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&term=' + q;
