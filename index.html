@@ -3,18 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0c0708" />
+    <meta name="theme-color" content="#0f0d0e" />
+    <meta name="color-scheme" content="dark light" />
+    <script src="/assets/maple-mode.js?v=3"></script>
+    <link rel="stylesheet" href="/assets/maple-mode.css?v=1" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Maple ID" />
+    <meta name="apple-mobile-web-app-title" content="M-ID" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Maple ID</title>
-    <meta name="description" content="Maple ID: one link for every game ID and social handle. Claim yours." />
+    <title>M-ID</title>
+    <meta name="description" content="M-ID: one link for every game ID and social handle. Claim yours." />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Unbounded:wght@600;700&display=swap" rel="stylesheet" />
     
     <!-- Supabase bridge: real Supabase Auth sessions + database rules (see supabase_setup.sql) -->
     <script>
@@ -29,7 +33,7 @@
     new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
   const parse = (s) => { try { return JSON.parse(s || '{}') || {}; } catch { return {}; } };
 
-  const RESERVED_SLUGS = ['owner','studio','admin','api','assets','login','signup','www','support','help','about','static','index','digitalid','mapleid','explore','profile'];
+  const RESERVED_SLUGS = ['owner','studio','admin','api','assets','login','signup','www','support','help','about','static','index','digitalid','mapleid','explore','profile','builder'];
   const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,28}[a-z0-9])$/;
   const MEDIA_RE = /^(https?:\/\/\S+|data:image\/(?:jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+)$/i;
   const EDITABLE = ['name','role','bio','country','city','avatar','banner','theme','openTime','closeTime','timezone',
@@ -39,8 +43,9 @@
     'layout','accent','accent2','cardTag','statusText','statusMode','specs','footerText','bannerGray','bannerDim',
     'avatarShape','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid',
     'spotify','musicAuto','shopEnabled','shopTitle','shopNote','shopWhatsApp','currency','products',
-    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass','glassBlur','cardStyle','bgFx','listed'];
-  const BOOLS = ['bgFx','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','openGame','showLove','liquidGlass','listed'];
+    'payEnabled','payQr','payFg','payBg','payDots','payIcon','payAmount','qrIcon',
+    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass','glassBlur','cardStyle','bgFx','listed','blocks','page','gifs','bdTpl','bd'];
+  const BOOLS = ['bgFx','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','payEnabled','payAmount','openGame','showLove','liquidGlass','listed'];
   const CURRENCIES = ['auto','MYR','SGD','IDR','BND','PHP','THB','USD'];
   const HEX_RE = /^#[0-9a-f]{6}$/i;
   const clampInt = (v, lo, hi, dflt) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt; };
@@ -72,9 +77,90 @@
       return { name: str(x && x.name, 60), desc: str(x && x.desc, 160), price, image: MEDIA_RE.test(image) ? image : '', soldOut: !!(x && (x.soldOut === true || x.soldOut === 'true')) };
     }).filter((x) => x.name);
   }
+  // QR checkout: keep only a well-formed bank payment QR (EMV text with a correct checksum). Anything else is dropped.
+  function crc16(s) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < s.length; i++) { crc ^= s.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF; }
+    return ('0000' + crc.toString(16).toUpperCase()).slice(-4);
+  }
+  function cleanPayQr(v) {
+    v = String(v || '').trim();
+    if (v.length < 30 || v.length > 600 || !/^[\x20-\x7e]+$/.test(v) || !/^00020[12]/.test(v)) return '';
+    let i = 0, last = '';
+    while (i < v.length) {
+      const id = v.slice(i, i + 2), ln = v.slice(i + 2, i + 4);
+      if (!/^\d{2}$/.test(id) || !/^\d{2}$/.test(ln)) return '';
+      const n = parseInt(ln, 10);
+      if (i + 4 + n > v.length) return '';
+      last = id;
+      if (id === '63' && (n !== 4 || i + 4 + n !== v.length)) return '';
+      i += 4 + n;
+    }
+    return last === '63' && crc16(v.slice(0, -4)) === v.slice(-4).toUpperCase() ? v : '';
+  }
+  const QR_ICONS = ['none','leaf','star','heart','sneaker','boot','heel','bag','cart','shirt','bolt','crown','paw','flower','coin'];
+  function cleanQrIcon(v, fb) {
+    v = String(v == null ? '' : v);
+    if (QR_ICONS.includes(v)) return v;
+    if (v.startsWith('t:')) { const t = Array.from(v.slice(2).replace(/[<>&"'\\]/g, '')).slice(0, 2).join(''); if (t) return 't:' + t; }
+    return fb;
+  }
+  // Free-canvas builder: every block is rebuilt from known fields only
+  const BTYPES = ['text','img','btn','shape','emoji','avatar','ask'];
+  const hexOr = (v, d) => (HEX_RE.test(v || '') ? v : d);
+  const linkOk = (v) => { v = str(v, 300); return /^(https?:\/\/\S+|mailto:\S+|tel:[0-9+\-()\s.]+)$/i.test(v) ? v : (/^[\w.-]+\.[a-z]{2,}\S*$/i.test(v) ? 'https://' + v : ''); };
+  const srcOk = (v) => { v = String(v || '').trim(); return v.length <= (/^data:image\/gif/i.test(v) ? 520000 : 150000) && /^(https:\/\/\S+|data:image\/(?:jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+)$/i.test(v) ? v : ''; };
+  function cleanBlocks(a) {
+    return (Array.isArray(a) ? a : []).slice(0, 80).filter((x) => x && BTYPES.includes(x.t)).map((x) => ({
+      id: str(x.id, 16).replace(/[^\w-]/g, '') || Math.random().toString(36).slice(2, 8), t: x.t,
+      x: clampInt(x.x, -200, 600, 20), y: clampInt(x.y, -100, 3000, 20), w: clampInt(x.w, 10, 600, 120), h: clampInt(x.h, 10, 3000, 40),
+      r: clampInt(x.r, -180, 180, 0), o: Math.min(1, Math.max(0, Number(x.o) || 0)) || (Number(x.o) === 0 ? 0 : 1),
+      txt: str(x.txt, 600), src: srcOk(x.src), url: linkOk(x.url), fs: clampInt(x.fs, 6, 120, 18),
+      fw: ['400','700','900'].includes(String(x.fw)) ? String(x.fw) : '400', al: ['left','center','right'].includes(x.al) ? x.al : 'left',
+      c: hexOr(x.c, '#b3122e'), bg: hexOr(x.bg, '#e11d48'), bc: hexOr(x.bc, '#b3122e'), rad: clampInt(x.rad, 0, 300, 12), bd: clampInt(x.bd, 0, 20, 0), lb: str(x.lb, 24), bi: srcOk(x.bi), pat: x.pat === 'stripes' ? 'stripes' : '', mode: ['text','draw'].includes(x.mode) ? x.mode : 'both'
+    }));
+  }
+  const gifOk = (v) => { v = String(v || '').trim(); return v.length <= 520000 && /^(https:\/\/\S+|data:image\/(?:gif|png|webp|jpeg);base64,[A-Za-z0-9+\/=]+)$/i.test(v) ? v : ''; };
+  function cleanGifs(a) {
+    let budget = 1000000;
+    return (Array.isArray(a) ? a : []).slice(0, 8).map((x) => {
+      const src = gifOk(x && x.src); if (!src) return null;
+      if (src.startsWith('data:')) { if (src.length > budget) return null; budget -= src.length; }
+      const o = Number(x.o);
+      return { id: str(x.id, 16).replace(/[^\w-]/g, '') || Math.random().toString(36).slice(2, 8), src,
+        x: clampInt(x.x, -50, 150, 10), y: clampInt(x.y, -300, 4000, 20), w: clampInt(x.w, 3, 150, 30), r: clampInt(x.r, -180, 180, 0),
+        o: Number.isFinite(o) ? Math.min(1, Math.max(0.05, o)) : 1, z: ['back','front','bg'].includes(x.z) ? x.z : 'front' };
+    }).filter(Boolean);
+  }
+  function cleanBorders(b) {
+    const out = {}; b = b && typeof b === 'object' ? b : {};
+    for (const k of ['panel','banner','avatar','name','specs','bio','links']) {
+      const x = b[k]; if (!x || typeof x !== 'object') continue; const o = {};
+      if (x.off) o.off = true;
+      if (HEX_RE.test(x.c || '')) o.c = x.c;
+      if (x.w !== undefined) o.w = clampInt(x.w, 0, 12, 1);
+      if (x.r !== undefined && x.r !== '') o.r = clampInt(x.r, 0, 999, 12);
+      if (x.g !== undefined) o.g = clampInt(x.g, 0, 40, 0);
+      if (['solid','dashed','dotted','double','groove','ridge'].includes(x.s)) o.s = x.s;
+      if (x.img) { const im = String(x.img).trim(); if (im.length <= 200000 && /^(https:\/\/\S+|data:image\/(?:gif|png|webp|jpeg);base64,[A-Za-z0-9+\/=]+)$/i.test(im)) o.img = im; }
+      if (Object.keys(o).length) out[k] = o;
+    }
+    return out;
+  }
+  function cleanPage(p) {
+    p = p && typeof p === 'object' ? p : {};
+    const bi = String(p.bgImg || '').trim();
+    return { bg1: hexOr(p.bg1, '#ffe3e8'), bg2: hexOr(p.bg2, '#ffb3c1'), ang: clampInt(p.ang, 0, 360, 160), h: clampInt(p.h, 300, 3000, 720),
+      font: ['sans','serif','mono','fun','bold'].includes(p.font) ? p.font : 'sans', bgImg: bi && srcOk(bi) ? bi : '' };
+  }
   // Coerce every layout option to a safe value (never trust what the browser sent)
   function cleanOptions(m) {
-    m.layout = m.layout === 'star' ? 'star' : 'basic';
+    m.layout = ['star','builder'].includes(m.layout) ? m.layout : 'basic';
+    if (m.blocks !== undefined) m.blocks = cleanBlocks(m.blocks);
+    if (m.page !== undefined) m.page = cleanPage(m.page);
+    if (m.gifs !== undefined) m.gifs = cleanGifs(m.gifs);
+    if (m.bd !== undefined) m.bd = cleanBorders(m.bd);
+    if (m.bdTpl !== undefined) m.bdTpl = ['default','neon','gold','pastel','pixel','glass','none'].includes(m.bdTpl) ? m.bdTpl : 'default';
     m.accent = HEX_RE.test(m.accent || '') ? m.accent : '';
     m.accent2 = HEX_RE.test(m.accent2 || '') ? m.accent2 : '';
     m.cardTag = str(m.cardTag, 24);
@@ -92,6 +178,12 @@
     if (m.shopNote !== undefined) m.shopNote = str(m.shopNote, 120);
     if (m.currency !== undefined) m.currency = CURRENCIES.includes(m.currency) ? m.currency : 'auto';
     if (m.products !== undefined) m.products = cleanProducts(m.products);
+    if (m.payQr !== undefined) m.payQr = cleanPayQr(m.payQr);
+    if (m.payFg !== undefined) m.payFg = HEX_RE.test(m.payFg || '') ? m.payFg : '';
+    if (m.payBg !== undefined) m.payBg = HEX_RE.test(m.payBg || '') ? m.payBg : '';
+    if (m.payDots !== undefined) m.payDots = ['square','rounded','dots'].includes(m.payDots) ? m.payDots : 'rounded';
+    if (m.payIcon !== undefined) m.payIcon = cleanQrIcon(m.payIcon, 'star');
+    if (m.qrIcon !== undefined) m.qrIcon = cleanQrIcon(m.qrIcon, 'leaf');
     if (m.gaming !== undefined) m.gaming = cleanRows(m.gaming, 24);
     if (m.channels !== undefined) m.channels = cleanRows(m.channels, 24);
     m.cardStyle = ['default','outline','solid','neon','bubble','tinted'].includes(m.cardStyle) ? m.cardStyle : 'default';
@@ -99,6 +191,7 @@
     m.bannerGray = clampInt(m.bannerGray, 0, 100, 75);
     m.bannerDim = clampInt(m.bannerDim, 30, 100, 72);
     for (const k of BOOLS) if (m[k] !== undefined) m[k] = m[k] === true || m[k] === 'true';
+    if (m.payEnabled && !m.payQr) m.payEnabled = false;      // no valid QR, nothing to show
     if (m.specs !== undefined) {
       m.specs = (Array.isArray(m.specs) ? m.specs : []).slice(0, 12)
         .map((x) => ({ label: str(x && x.label, 24), value: str(x && x.value, 60) }))
@@ -137,6 +230,7 @@
     sociabuzzEnabled: false, sociabuzz: '', widgetEnabled: false, widgetCode: '',
     gaming: [], channels: [], createdAt: new Date().toISOString().slice(0, 10),
     shopEnabled: false, shopTitle: '', shopNote: '', shopWhatsApp: '', currency: 'auto', products: [], spotify: '', musicAuto: true,
+    payEnabled: false, payQr: '', payFg: '', payBg: '', payDots: 'rounded', payIcon: 'star', payAmount: false,
     donate: '', donateLabel: '', contactPhone: '', contactEmail: '', openGame: true
   });
 
@@ -244,7 +338,9 @@
     }
     const { likes, visits, reactions, __dig, ...rest } = extra;
     const base = row.slug === 'maple' ? { ...defaultNew(), ...DEFAULT_MAPLE } : defaultNew();
-    return { ...base, ...rest, id: row.id, slug: row.slug, name,
+    const dbNo = Number(row.card_no), packedNo = Number(rest.cardNo);
+    const cardNo = dbNo > 0 ? dbNo : (packedNo > 0 ? packedNo : (row.slug === 'maple' ? 1 : 0));
+    return { ...base, ...rest, id: row.id, slug: row.slug, name, cardNo,
       gaming: rest.gaming || [], channels: rest.channels || [] };
   }
   function withStats(profile, stats) {
@@ -262,6 +358,11 @@
     let d = await r.json().catch(() => null);
     if (Array.isArray(d)) d = d[0];
     return d && d.slug ? d : null;
+  }
+  async function nextCardNo() {
+    const r = await sb('/rest/v1/profiles?select=id&limit=1', { headers: { Prefer: 'count=exact' } });
+    const m = r && /\/(\d+)$/.exec(r.headers.get('content-range') || '');
+    return m ? Number(m[1]) + 1 : 0;
   }
   async function getOwnRow(au) {
     const r = await sb(`/rest/v1/profiles?select=*&id=eq.${au.uid}`, { token: au.token });
@@ -377,6 +478,205 @@
 
       if (sub === 'settings') return json({ external: {}, disable_signup: false, autoconfirm: false });
       return json({ code: 404, msg: 'Not supported' }, 404);
+    }
+
+    // ===== Forum (signed-in members) =====
+    if (url.includes('/api/forum/')) {
+      const au = await authUser();
+      if (!au) return json({ error: 'Please log in to use the forum.' }, 401);
+      const T = au.token, CATS = ['general', 'gaming', 'showcase', 'help'];
+      const rest = url.split('/api/forum/')[1].split('?')[0].replace(/\/+$/, '').split('/');
+      const qs = new URL(url, location.origin).searchParams;
+      const isId = (v) => /^[0-9a-f-]{36}$/i.test(v || '');
+      const cnt = (x, k) => (x && x[k] && x[k][0] && Number(x[k][0].count)) || 0;
+      const who = async () => { const row = await getOwnRow(au); const p = row ? unpackRow(row) : null; return { name: String((p && p.name) || 'Member').slice(0, 80), slug: String((p && p.slug) || '').slice(0, 40) }; };
+      const failMsg = (r, what) => (r && (r.status === 403 || r.status === 401) ? 'Slow down a little, then try again.' : 'Could not ' + what + '. Please try again.');
+      const hdr = { 'Prefer': 'return=minimal' };
+
+      if (rest[0] === 'avatars' && method === 'GET') {
+        const slugs = String(qs.get('slugs') || '').split(',').map((x) => x.trim().toLowerCase()).filter((x) => /^[a-z0-9_-]{1,40}$/.test(x)).slice(0, 12);
+        if (!slugs.length) return json({ avatars: {} });
+        const ar = await sb('/rest/v1/profiles?select=id,slug,name&slug=in.(' + slugs.map(encodeURIComponent).join(',') + ')', { token: T });
+        const out = {};
+        if (ar && ar.ok) (await ar.json().catch(() => [])).forEach((row) => {
+          const a = unpackRow(row).avatar;
+          if (typeof a === 'string' && a && (/^https:\/\/\S+$/i.test(a) || /^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(a))) out[row.slug] = a;
+        });
+        return json({ avatars: out });
+      }
+      if (rest[0] === 'posts' && rest.length === 1 && method === 'GET') {
+        const cat = qs.get('cat'), before = qs.get('before'), q = String(qs.get('q') || '').replace(/[^\w\s-]/g, '').slice(0, 40).trim();
+        const BASE = 'id,author,author_slug,author_name,category,title,body,image,created_at,forum_likes(count),forum_comments(count)';
+        let filt = '';
+        if (CATS.includes(cat)) filt += '&category=eq.' + cat;
+        if (q) filt += '&or=(title.ilike.*' + encodeURIComponent(q) + '*,body.ilike.*' + encodeURIComponent(q) + '*)';
+        let cur = '';
+        if (before && /^[\d\-T:.+Z%]+$/.test(before)) cur = '&created_at=lt.' + encodeURIComponent(before);
+        let hasPin = true;
+        let r = await sb('/rest/v1/forum_posts?select=' + BASE + ',pinned&pinned=eq.false&order=created_at.desc&limit=21' + filt + cur, { token: T });
+        if (!r || !r.ok) { hasPin = false; r = await sb('/rest/v1/forum_posts?select=' + BASE + '&order=created_at.desc&limit=21' + filt + cur, { token: T }); }
+        if (!r || !r.ok) return json({ error: 'Could not load the forum. Has the forum SQL been run in Supabase?' }, 503);
+        let rows = await r.json().catch(() => []); if (!Array.isArray(rows)) rows = [];
+        const more = rows.length > 20; rows = rows.slice(0, 20);
+        let pinRows = [];
+        if (hasPin && !before) { const pr = await sb('/rest/v1/forum_posts?select=' + BASE + ',pinned&pinned=eq.true&order=created_at.desc&limit=5' + filt, { token: T }); if (pr && pr.ok) pinRows = await pr.json().catch(() => []); if (!Array.isArray(pinRows)) pinRows = []; }
+        const ids = rows.concat(pinRows).map((x) => x.id).filter(isId);
+        let mine = [];
+        if (ids.length) { const lr = await sb('/rest/v1/forum_likes?select=post&user_id=eq.' + au.uid + '&post=in.(' + ids.join(',') + ')', { token: T }); if (lr && lr.ok) mine = (await lr.json().catch(() => [])).map((x) => x.post); }
+        const map = (x) => ({ id: x.id, mine: x.author === au.uid, slug: x.author_slug, name: x.author_name, cat: x.category, title: x.title, body: x.body, image: x.image, at: x.created_at, pinned: !!x.pinned, likes: cnt(x, 'forum_likes'), comments: cnt(x, 'forum_comments'), liked: mine.includes(x.id) });
+        return json({ more, me: { mod: !!au.isOwner }, pinned: pinRows.map(map), posts: rows.map(map) });
+      }
+      if (rest[0] === 'posts' && rest.length === 1 && method === 'POST') {
+        const b = parse(options.body), title = str(b.title, 120).trim(), text = str(b.body, 2000).trim(), cat = CATS.includes(b.category) ? b.category : 'general';
+        let image = String(b.image || '').trim(); if (image && !(image.length <= 500 && /^https:\/\/[^\s]+$/i.test(image))) image = '';
+        if (!title) return json({ error: 'Give your post a title.' }, 400);
+        const w = await who();
+        const r = await sb('/rest/v1/forum_posts', { method: 'POST', token: T, headers: hdr, body: { author: au.uid, author_slug: w.slug, author_name: w.name, category: cat, title, body: text, image } });
+        if (!r || !r.ok) return json({ error: failMsg(r, 'post') }, 429);
+        return json({ ok: true });
+      }
+      if (rest[0] === 'posts' && isId(rest[1]) && rest.length === 2 && method === 'DELETE') {
+        const r = await sb('/rest/v1/forum_posts?id=eq.' + rest[1], { method: 'DELETE', token: T });
+        return json({ ok: !!(r && r.ok) }, r && r.ok ? 200 : 503);
+      }
+      if (rest[0] === 'posts' && isId(rest[1]) && rest[2] === 'comments') {
+        if (method === 'GET') {
+          const r = await sb('/rest/v1/forum_comments?select=id,author,author_slug,author_name,body,created_at&post=eq.' + rest[1] + '&order=created_at.asc&limit=100', { token: T });
+          if (!r || !r.ok) return json({ error: 'Could not load comments.' }, 503);
+          const rows = await r.json().catch(() => []);
+          return json({ comments: (Array.isArray(rows) ? rows : []).map((x) => ({ id: x.id, mine: x.author === au.uid, slug: x.author_slug, name: x.author_name, body: x.body, at: x.created_at })), mod: !!au.isOwner });
+        }
+        if (method === 'POST') {
+          const text = str(parse(options.body).body, 500).trim(); if (!text) return json({ error: 'Write a comment first.' }, 400);
+          const w = await who();
+          const r = await sb('/rest/v1/forum_comments', { method: 'POST', token: T, headers: hdr, body: { post: rest[1], author: au.uid, author_slug: w.slug, author_name: w.name, body: text } });
+          if (!r || !r.ok) return json({ error: failMsg(r, 'comment') }, 429);
+          return json({ ok: true });
+        }
+      }
+      if (rest[0] === 'comments' && isId(rest[1]) && method === 'DELETE') {
+        const r = await sb('/rest/v1/forum_comments?id=eq.' + rest[1], { method: 'DELETE', token: T });
+        return json({ ok: !!(r && r.ok) }, r && r.ok ? 200 : 503);
+      }
+      if (rest[0] === 'posts' && isId(rest[1]) && rest[2] === 'like') {
+        if (method === 'POST') {
+          const r = await sb('/rest/v1/forum_likes', { method: 'POST', token: T, headers: hdr, body: { post: rest[1], user_id: au.uid, user_name: (await who()).name, user_slug: (await who()).slug } });
+          return json({ ok: !!(r && (r.ok || r.status === 409)) });
+        }
+        if (method === 'DELETE') {
+          const r = await sb('/rest/v1/forum_likes?post=eq.' + rest[1] + '&user_id=eq.' + au.uid, { method: 'DELETE', token: T });
+          return json({ ok: !!(r && r.ok) });
+        }
+      }
+      const slugOk = (v) => /^[a-z0-9_-]{1,40}$/i.test(v || '');
+      const gone = (r) => !r || !r.ok;
+
+      // ---- pin (mod only) ----
+      if (rest[0] === 'posts' && isId(rest[1]) && rest[2] === 'pin' && method === 'POST') {
+        if (!au.isOwner) return json({ error: 'Only the admin can pin posts.' }, 403);
+        const r = await sb('/rest/v1/forum_posts?id=eq.' + rest[1], { method: 'PATCH', token: T, headers: hdr, body: { pinned: !!parse(options.body).pinned } });
+        return json({ ok: !gone(r) }, gone(r) ? 503 : 200);
+      }
+      // ---- report a post or a comment ----
+      if ((rest[0] === 'posts' || rest[0] === 'comments') && isId(rest[1]) && rest[2] === 'report' && method === 'POST') {
+        const kind = rest[0] === 'posts' ? 'post' : 'comment', reason = str(parse(options.body).reason, 200).trim();
+        let post = rest[1];
+        if (kind === 'comment') { const cr = await sb('/rest/v1/forum_comments?select=post&id=eq.' + rest[1], { token: T }); const cj = cr && cr.ok ? await cr.json().catch(() => []) : []; if (!cj[0]) return json({ error: 'That comment is gone.' }, 404); post = cj[0].post; }
+        const r = await sb('/rest/v1/forum_reports', { method: 'POST', token: T, headers: hdr, body: { kind, target: rest[1], post, reporter: au.uid, reason } });
+        if (r && r.status === 409) return json({ ok: true, again: true });
+        if (gone(r)) return json({ error: r && r.status === 403 ? 'Slow down a little, then try again.' : 'Could not send the report. Has the part-2 SQL been run?' }, 429);
+        return json({ ok: true });
+      }
+      if (rest[0] === 'reports' && rest.length === 1 && method === 'GET') {
+        if (!au.isOwner) return json({ error: 'Admins only.' }, 403);
+        const r = await sb('/rest/v1/forum_reports?select=kind,target,post,reason,created_at&order=created_at.desc&limit=200', { token: T });
+        if (gone(r)) return json({ items: [] });
+        const rows = await r.json().catch(() => []), g = {};
+        rows.forEach((x) => { const k = x.kind + ':' + x.target; const e = g[k] = g[k] || { kind: x.kind, target: x.target, post: x.post, count: 0, reasons: [] }; e.count++; if (x.reason && e.reasons.length < 3 && !e.reasons.includes(x.reason)) e.reasons.push(x.reason); });
+        const items = Object.values(g), pids = items.filter((i) => i.kind === 'post').map((i) => i.target).filter(isId), cids = items.filter((i) => i.kind === 'comment').map((i) => i.target).filter(isId);
+        const info = {};
+        if (pids.length) { const pr = await sb('/rest/v1/forum_posts?select=id,title,body,author_name,author_slug&id=in.(' + pids.join(',') + ')', { token: T }); if (pr && pr.ok) (await pr.json().catch(() => [])).forEach((x) => { info['post:' + x.id] = { text: x.title + (x.body ? ' - ' + x.body : ''), name: x.author_name, slug: x.author_slug }; }); }
+        if (cids.length) { const cr = await sb('/rest/v1/forum_comments?select=id,body,author_name,author_slug&id=in.(' + cids.join(',') + ')', { token: T }); if (cr && cr.ok) (await cr.json().catch(() => [])).forEach((x) => { info['comment:' + x.id] = { text: x.body, name: x.author_name, slug: x.author_slug }; }); }
+        return json({ items: items.map((i) => { const f = info[i.kind + ':' + i.target]; return { kind: i.kind, target: i.target, count: i.count, reasons: i.reasons, gone: !f, text: f ? String(f.text).slice(0, 220) : '', name: f ? f.name : '', slug: f ? f.slug : '' }; }) });
+      }
+      if (rest[0] === 'reports' && (rest[1] === 'post' || rest[1] === 'comment') && isId(rest[2]) && method === 'DELETE') {
+        if (!au.isOwner) return json({ error: 'Admins only.' }, 403);
+        const r = await sb('/rest/v1/forum_reports?kind=eq.' + rest[1] + '&target=eq.' + rest[2], { method: 'DELETE', token: T });
+        return json({ ok: !gone(r) });
+      }
+      // ---- notifications ----
+      if (rest[0] === 'notifications' && method === 'GET') {
+        const r = await sb('/rest/v1/forum_notifications?select=id,kind,post_title,actor_name,actor_slug,snippet,read,created_at&user_id=eq.' + au.uid + '&order=created_at.desc&limit=40', { token: T });
+        const dr = await sb('/rest/v1/forum_dms?select=id&recipient=eq.' + au.uid + '&read=eq.false&limit=99', { token: T });
+        const items = !gone(r) ? await r.json().catch(() => []) : [], dm = !gone(dr) ? (await dr.json().catch(() => [])).length : 0;
+        return json({ off: gone(r), mod: !!au.isOwner, dm, unread: items.filter((x) => !x.read).length, items: items.map((x) => ({ kind: x.kind, title: x.post_title, name: x.actor_name, slug: x.actor_slug, snippet: x.snippet, read: !!x.read, at: x.created_at })) });
+      }
+      if (rest[0] === 'notifications' && rest[1] === 'read' && method === 'POST') {
+        const r = await sb('/rest/v1/forum_notifications?user_id=eq.' + au.uid + '&read=eq.false', { method: 'PATCH', token: T, headers: hdr, body: { read: true } });
+        return json({ ok: !gone(r) });
+      }
+      // ---- private messages ----
+      if (rest[0] === 'dms' && rest.length === 1 && method === 'GET') {
+        const r = await sb('/rest/v1/forum_dms?select=sender,sender_slug,sender_name,recipient,recipient_slug,recipient_name,body,read,created_at&or=(sender.eq.' + au.uid + ',recipient.eq.' + au.uid + ')&order=created_at.desc&limit=200', { token: T });
+        if (gone(r)) return json({ threads: [], off: true });
+        const rows = await r.json().catch(() => []), by = {};
+        rows.forEach((x) => { const me = x.sender === au.uid, k = me ? x.recipient : x.sender; const e = by[k] = by[k] || { slug: me ? x.recipient_slug : x.sender_slug, name: me ? x.recipient_name : x.sender_name, last: String(x.body).slice(0, 80), mine: me, at: x.created_at, unread: 0 }; if (!me && !x.read) e.unread++; });
+        return json({ threads: Object.values(by) });
+      }
+      if (rest[0] === 'dms' && slugOk(rest[1]) && rest.length === 2) {
+        const pr = await sb('/rest/v1/profiles?select=*&slug=eq.' + encodeURIComponent(rest[1].toLowerCase()));
+        const prow = pr && pr.ok ? await pr.json().catch(() => []) : [];
+        if (!prow[0]) return json({ error: 'No member has that link.' }, 404);
+        const other = prow[0], op = unpackRow(other), oname = String(op.name || 'Member').slice(0, 80);
+        if (other.id === au.uid) return json({ error: 'You cannot message yourself.' }, 400);
+        if (method === 'GET') {
+          const r = await sb('/rest/v1/forum_dms?select=id,sender,body,created_at&or=(and(sender.eq.' + au.uid + ',recipient.eq.' + other.id + '),and(sender.eq.' + other.id + ',recipient.eq.' + au.uid + '))&order=created_at.asc&limit=200', { token: T });
+          if (gone(r)) return json({ error: 'Messages are not set up yet. Run the part-2 SQL in Supabase.' }, 503);
+          const rows = await r.json().catch(() => []);
+          await sb('/rest/v1/forum_dms?recipient=eq.' + au.uid + '&sender=eq.' + other.id + '&read=eq.false', { method: 'PATCH', token: T, headers: hdr, body: { read: true } });
+          return json({ with: { slug: op.slug || rest[1], name: oname }, messages: rows.map((x) => ({ id: x.id, mine: x.sender === au.uid, body: x.body, at: x.created_at })) });
+        }
+        if (method === 'POST') {
+          const text = str(parse(options.body).body, 1000).trim(); if (!text) return json({ error: 'Write a message first.' }, 400);
+          const w = await who(); if (!w.slug) return json({ error: 'Claim your card link first, so people can reply to you.' }, 400);
+          const r = await sb('/rest/v1/forum_dms', { method: 'POST', token: T, headers: hdr, body: { sender: au.uid, sender_slug: w.slug, sender_name: w.name, recipient: other.id, recipient_slug: op.slug || rest[1], recipient_name: oname, body: text } });
+          if (gone(r)) return json({ error: r && r.status === 403 ? 'Slow down a little, then try again.' : 'Could not send. Has the part-2 SQL been run?' }, 429);
+          return json({ ok: true });
+        }
+      }
+      return json({ error: 'Not supported' }, 404);
+    }
+
+    // ===== Anonymous messages (text + drawing) =====
+    if (url.includes('/api/messages')) {
+      const rest = url.split('/api/messages')[1].split('?')[0].replace(/^\/+|\/+$/g, '');
+      if (method === 'POST' && rest) {
+        const slug = normSlug(decodeURIComponent(rest));
+        const body = parse(options.body);
+        const text = str(body.text, 500);
+        let drawing = String(body.drawing || '').trim();
+        if (drawing && (drawing.length > 60000 || !/^data:image\/(?:jpeg|png);base64,[A-Za-z0-9+\/=]+$/.test(drawing))) drawing = '';
+        if (!text && !drawing) return json({ error: 'Write or draw something first.' }, 400);
+        if (!SLUG_RE.test(slug)) return json({ error: 'Card not found.' }, 404);
+        const pr = await sb(`/rest/v1/profiles?select=id&slug=eq.${encodeURIComponent(slug)}`);
+        const prow = pr && pr.ok ? await pr.json().catch(() => []) : [];
+        if (!Array.isArray(prow) || !prow.length) return json({ error: 'Card not found.' }, 404);
+        const ins = await sb('/rest/v1/anon_messages', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: { owner: prow[0].id, body: text, drawing } });
+        if (!ins || !ins.ok) return json({ error: 'Could not send right now. Try again later.' }, 503);
+        return json({ ok: true });
+      }
+      const au = await authUser();
+      if (!au) return json({ error: 'Log in first.' }, 401);
+      if (method === 'GET' && !rest) {
+        const r = await sb('/rest/v1/anon_messages?select=id,body,drawing,created_at&order=created_at.desc&limit=100', { token: au.token });
+        if (!r || !r.ok) return json({ error: 'Could not load messages.' }, 503);
+        return json({ messages: await r.json().catch(() => []) });
+      }
+      if (method === 'DELETE' && /^[0-9a-f-]{36}$/i.test(rest)) {
+        const r = await sb(`/rest/v1/anon_messages?id=eq.${rest}`, { method: 'DELETE', token: au.token });
+        return json({ ok: !!(r && r.ok) }, r && r.ok ? 200 : 503);
+      }
+      return json({ error: 'Not supported' }, 404);
     }
 
     // ===== Uploads =====
@@ -500,7 +800,10 @@
           return json({ error: `${k === 'avatar' ? 'Avatar' : 'Banner'} must be a full https:// link or an uploaded image` }, 400);
         }
       }
+      if (!existing) merged.cardNo = slug === 'maple' ? 1 : await nextCardNo();
+      else merged.cardNo = Number(current.cardNo) > 0 ? Number(current.cardNo) : undefined;
       const { id, likes, visits, reactions, ...toStore } = merged;
+      if (!(toStore.cardNo > 0)) delete toStore.cardNo;
       const packed = JSON.stringify({ __dig: 1, ...toStore, slug });
       if (packed.length > 1500000) return json({ error: 'Your card is too large. Remove a few product photos and try again.' }, 400);
 
@@ -534,21 +837,32 @@ if(/^#[0-9a-f]{6}$/i.test(o.accent||'')){var a=o.accent,b=/^#[0-9a-f]{6}$/i.test
 r.style.setProperty('--accent',a);r.style.setProperty('--accent-2',b);r.style.setProperty('--accent-soft','rgba('+x+','+y+','+z+',.13)');r.style.setProperty('--accent-glow','rgba('+x+','+y+','+z+',.45)');r.style.setProperty('--soft','rgba('+x+','+y+','+z+',.14)')}}catch(e){}})();
 </script>
     <script src="/assets/qr-lib.js"></script>
-    <script src="/assets/maple-ui.js?v=2"></script>
+    <script src="/assets/qr-icons.js?v=1"></script>
+    <script src="/assets/maple-ui.js?v=3"></script>
     <script src="/assets/maple-explore.js?v=2"></script>
-    <script src="/assets/maple-pager.js?v=1"></script>
-    <script src="/assets/launch.js"></script>
-    <script type="module" crossorigin src="/assets/index-maple1.js?v=5"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-bhqqsojp.css" />
-    <link rel="stylesheet" href="/assets/maple.css?v=2" />
-    <link rel="stylesheet" href="/assets/themes.css?v=2" />
-    <link rel="stylesheet" href="/assets/maple-theme.css?v=3" />
-    <link rel="stylesheet" href="/assets/glass.css?v=3" />
-    <link rel="stylesheet" href="/assets/card-ui.css?v=1" />
-    <link rel="stylesheet" href="/assets/maple-ui.css?v=2" />
-    <link rel="stylesheet" href="/assets/maple-pager.css?v=1" />
-    <script src="/assets/maplefx.js?v=4" defer></script>
-    <script src="/assets/maple.js?v=1"></script>
+    <script src="/assets/maple-pay.js?v=4" defer></script>
+    <script src="/assets/maple-pager.js?v=7"></script>
+    <script src="/assets/launch.js?v=2"></script>
+    <script type="module" crossorigin src="/assets/index-maple1.js?v=13"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-bhqqsojp.css?v=2" />
+    <link rel="stylesheet" href="/assets/maple.css?v=3" />
+    <link rel="stylesheet" href="/assets/themes.css?v=4" />
+    <link rel="stylesheet" href="/assets/maple-theme.css?v=4" />
+    <link rel="stylesheet" href="/assets/glass.css?v=4" />
+    <link rel="stylesheet" href="/assets/card-ui.css?v=2" />
+    <link rel="stylesheet" href="/assets/maple-ui.css?v=5" />
+    <link rel="stylesheet" href="/assets/maple-pay.css?v=3" />
+    <link rel="stylesheet" href="/assets/maple-pager.css?v=6" />
+    <link rel="stylesheet" href="/assets/studio.css?v=3" />
+    <link rel="stylesheet" href="/assets/maple-design.css?v=2" />
+    <link rel="stylesheet" href="/assets/maple-shell.css?v=1" />
+    <link rel="stylesheet" href="/assets/maple-m.css?v=1" />
+    <script src="/assets/maple-studio.js?v=1" defer></script>
+    <script src="/assets/maple-builder.js?v=3" defer></script>
+    <script src="/assets/maple-forum.js?v=4" defer></script>
+    <script src="/assets/maple-shell.js?v=1" defer></script>
+    <script src="/assets/maplefx.js?v=6" defer></script>
+    <script src="/assets/maple.js?v=5"></script>
   </head>
   <body>
     <svg class="sprite" aria-hidden="true" focusable="false">
@@ -561,8 +875,8 @@ r.style.setProperty('--accent',a);r.style.setProperty('--accent-2',b);r.style.se
         <symbol id="leaf-veins" viewBox="0 0 100 100"><path pathLength="1" d="M50 96V8M50 76L84 46M50 76L16 46M50 62L74 30M50 62L26 30M50 50L66 20M50 50L34 20"/></symbol>
       </defs>
     </svg>
-    <div id="star-intro" style="position:fixed;inset:0;z-index:99999;background:#0c0708"></div>
-    <div id="boot-cover" style="position:fixed;inset:0;z-index:99998;background:#0c0708;transition:opacity .2s"></div>
+    <div id="star-intro" style="position:fixed;inset:0;z-index:99999;background:var(--bg)"></div>
+    <div id="boot-cover" style="position:fixed;inset:0;z-index:99998;background:var(--bg);transition:opacity .2s"></div>
     <script>
 /* Hollow-star zoom intro: a dark cover with a star-shaped hole. The star grows until the page is revealed. */
 function createStarIntro(opts) {
@@ -572,7 +886,7 @@ function createStarIntro(opts) {
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) { el.remove(); return { go: function () {}, skip: function () {} }; }
 
-    var W = window.innerWidth, H = window.innerHeight, cx = W / 2, cy = H / 2, bg = opts.bg || '#0c0708';
+    var W = window.innerWidth, H = window.innerHeight, cx = W / 2, cy = H / 2, bg = opts.bg || (getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f0d0e');
     el.style.background = 'transparent';
     el.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="display:block">'
         + '<defs><mask id="star-intro-mask"><rect width="' + W + '" height="' + H + '" fill="#fff"/><path id="si-hole" fill="#000"/></mask></defs>'
@@ -636,7 +950,7 @@ function createStarIntro(opts) {
       var el = document.getElementById('star-intro');
       var path = location.pathname.replace(/\/+$/, '') || '/';
       var cover = document.getElementById('boot-cover');
-      if (path === '/' || path === '/studio' || path === '/explore' || path === '/index.html') { if (cover) cover.remove(); }
+      if (path === '/' || path === '/studio' || path === '/profile' || path === '/explore' || path === '/index.html') { if (cover) cover.remove(); }
       else {
         // a card page: keep the screen dark until the card (or its star frame) is ready
         window.__bootCoverOff = function () { if (!cover) return; var c = cover; cover = null; c.style.opacity = '0'; setTimeout(function () { c.remove(); }, 220); };
@@ -645,9 +959,9 @@ function createStarIntro(opts) {
       var seen = false;
       try { seen = !!sessionStorage.getItem('dig-intro'); } catch (e) {}
       // Only on the home page / studio, once per visit. Star-layout cards play their own intro.
-      if (seen || (path !== '/' && path !== '/studio' && path !== '/explore' && path !== '/index.html')) { el.remove(); return; }
+      if (seen || (path !== '/' && path !== '/studio' && path !== '/profile' && path !== '/explore' && path !== '/index.html')) { el.remove(); return; }
       try { sessionStorage.setItem('dig-intro', '1'); } catch (e) {}
-      var intro = createStarIntro({ bg: '#0c0708' });
+      var intro = createStarIntro({});
       var go = function () { setTimeout(function () { intro.go(); }, 250); };
       if (document.readyState === 'complete') go(); else window.addEventListener('load', go);
     })();
@@ -656,12 +970,12 @@ function createStarIntro(opts) {
     <div class="grain" aria-hidden="true"></div>
     <header class="topbar">
       <a href="/" data-link class="brand"
-        ><svg class="leaf-ico" aria-hidden="true"><use href="#leaf"/></svg> Maple<b>ID</b></a
+        ><svg class="leaf-ico" aria-hidden="true"><use href="#leaf"/></svg> M<b>-</b>ID</a
       >
       <nav id="nav-actions"></nav>
     </header>
     <main id="app"></main>
-    <footer class="foot"><svg class="leaf-ico" aria-hidden="true"><use href="#leaf"/></svg><span>Maple ID · Tap · Scan · Connect</span></footer>
+    <footer class="foot"><svg class="leaf-ico" aria-hidden="true"><use href="#leaf"/></svg><span>M-ID · Tap · Scan · Connect</span></footer>
 
     <div id="toast" class="toast" role="status"></div>
   </body>
