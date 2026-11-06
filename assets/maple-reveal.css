@@ -1,0 +1,5 @@
+/* M-ID · scroll reveal: cards slide up one by one as their section enters the screen */
+.rv{opacity:0;transform:translate3d(0,26px,0) scale(.97)}
+.rv.rv-on{opacity:1;transform:none;
+  transition:opacity .5s ease var(--rv-d,0ms),transform .6s cubic-bezier(.22,1,.36,1) var(--rv-d,0ms)}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}

@@ -114,14 +114,18 @@
   function themes() {
     var box = document.querySelector('.theme-pick');
     if (!box) return;
+    var name = function (t) { var x = (window.dgUI && dgUI.themes || []).filter(function (r) { return r[0] === t; })[0]; var n = box.querySelector('.mh2-tname'); if (n) n.textContent = x ? String(x[1]).replace(/ .*/, '') : ''; };
     var set = function (t) {
+      var hc = document.querySelector('.hero-card');
+      if (hc && !reduce) { hc.classList.remove('mh2-swap'); void hc.offsetWidth; hc.classList.add('mh2-swap'); }
+      name(t);
       document.documentElement.dataset.theme = t;
       document.querySelectorAll('.hero-card .idcard').forEach(function (c) { c.dataset.theme = t; });
       box.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.t === t)); });
       recolor();
     };
     box.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.t); }); });
-    var cur = document.documentElement.dataset.theme; box.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.t === cur)); });
+    var cur = document.documentElement.dataset.theme; name(cur); box.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.t === cur)); });
   }
 
   window.mapleHome = {

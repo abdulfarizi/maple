@@ -1,0 +1,18 @@
+/* M-ID · section rail: dots on the right edge, the current section's dot stretches into a pill */
+html.rail-on{scroll-snap-type:y proximity}
+.sec-rail{position:fixed;right:max(6px,env(safe-area-inset-right));top:50%;z-index:40;transform:translate3d(0,-50%,0);
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;pointer-events:auto}
+.sec-rail[hidden]{display:none}
+.sec-rail button{all:unset;box-sizing:border-box;display:grid;place-items:center;width:22px;height:16px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;border-radius:10px}
+.sec-rail button.on{height:30px}
+.sec-rail i{display:block;width:5px;height:5px;border-radius:5px;
+  background:color-mix(in srgb,var(--ink,#fff) 42%,transparent);
+  box-shadow:0 0 0 .5px color-mix(in srgb,#000 25%,transparent),0 1px 4px rgba(0,0,0,.35);
+  transition:height .38s cubic-bezier(.22,1,.36,1),background-color .25s ease,width .25s ease}
+.sec-rail button.on i{width:5px;height:22px;background:var(--text,#fff)}
+.sec-rail button{transition:height .38s cubic-bezier(.22,1,.36,1)}
+.sec-rail button:hover i{background:color-mix(in srgb,var(--ink,#fff) 75%,transparent)}
+.sec-rail button.on:hover i{background:var(--text,#fff)}
+.sec-rail button:focus-visible{outline:2px solid var(--accent,#fff);outline-offset:1px}
+@media (prefers-reduced-motion:reduce){html.rail-on{scroll-snap-type:none}.sec-rail i,.sec-rail button{transition:none}}

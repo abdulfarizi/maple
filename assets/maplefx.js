@@ -110,13 +110,16 @@
     sky:     { rot: 0,  svg: '<g ' + F + '><circle cx="32" cy="60" r="20"/><circle cx="56" cy="46" r="26"/><circle cx="78" cy="62" r="18"/><rect x="30" y="60" width="50" height="20" rx="10"/></g><circle cx="20" cy="22" r="8" fill="var(--accent-2)" opacity=".7"/>' }
   };
 
+  /* shared with the Glass slides layout (maple-deck.js), which draws the same motif inside its own background */
+  window.mapleFxData = { FX: FX, D: D, BIG: BIG, G: G };
+
   /* ---------- state ---------- */
   var cv, ctx, big, raf = 0, parts = [], dpr = 1, W = 0, H = 0, palette = [], running = false, theme = '', cfg, paths = {}, tick = 0;
 
   function onHome() { var p = location.pathname.replace(/\/+$/, '') || '/'; return p === '/' || p === '/studio' || p === '/profile' || p === '/explore' || (!!document.body && document.body.classList.contains('pager-on')) || (!window.dgPager && !!document.getElementById('maple-home')); }
   function wanted() {
     var t = root.getAttribute('data-theme');
-    return !!FX[t] && root.getAttribute('data-bgfx') !== 'off' && !onHome() && !(document.body && document.body.classList.contains('star-mode'));
+    return !!FX[t] && root.getAttribute('data-bgfx') !== 'off' && !onHome() && !(document.body && document.body.classList.contains('star-mode')) && !document.querySelector('.dk-live');
   }
   function readPalette() {
     var cs = getComputedStyle(root);

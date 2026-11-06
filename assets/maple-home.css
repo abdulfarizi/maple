@@ -1,0 +1,184 @@
+/* M-ID · homepage v31 — hero with lighting, floating claim field, game ticker, bento, discovery and sign-up.
+ * Built on the existing tokens (--bg --panel --accent --accent-2 --line --text --display --sans --mono). */
+
+/* ── hero ── */
+.mh2{position:relative;isolation:isolate;align-items:center}
+.mh2-aura{position:absolute;inset:-12% -10% -6%;z-index:-1;pointer-events:none;overflow:hidden;
+  mask-image:radial-gradient(70% 70% at 50% 40%,#000 40%,transparent 80%);-webkit-mask-image:radial-gradient(70% 70% at 50% 40%,#000 40%,transparent 80%)}
+.mh2-aura i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;will-change:transform}
+.mh2-aura i:nth-child(1){width:46vmax;height:46vmax;left:46%;top:-14%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 70%,transparent),transparent 65%);animation:mh2-drift 18s ease-in-out infinite}
+.mh2-aura i:nth-child(2){width:34vmax;height:34vmax;left:-8%;top:24%;background:radial-gradient(circle,color-mix(in srgb,var(--accent-2,var(--accent)) 55%,transparent),transparent 65%);animation:mh2-drift 22s ease-in-out infinite reverse}
+.mh2-aura i:nth-child(3){width:26vmax;height:26vmax;left:62%;top:52%;background:radial-gradient(circle,color-mix(in srgb,var(--maple-red,#e0342f) 45%,transparent),transparent 65%);animation:mh2-drift 26s ease-in-out infinite}
+:root[data-mode=light] .mh2-aura i{opacity:.32}
+.mh2::before{content:'';position:absolute;inset:-4% -6%;z-index:-1;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(color-mix(in srgb,var(--ink) 7%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--ink) 7%,transparent) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:radial-gradient(60% 55% at 50% 35%,#000,transparent 75%);-webkit-mask-image:radial-gradient(60% 55% at 50% 35%,#000,transparent 75%)}
+
+.mh2-pill{display:inline-flex;align-items:center;gap:10px;margin:0 0 22px;padding:7px 14px 7px 10px;border-radius:999px;font-size:13px;font-weight:600;color:var(--text);
+  background:color-mix(in srgb,var(--panel) 70%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));
+  box-shadow:0 10px 30px -18px var(--accent-glow,var(--accent));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:mh2-up .7s var(--ease) both}
+.mh2-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);animation:mh2-ping 2.4s ease-in-out infinite}
+.mh2 .hero-copy h1.mh-title{max-width:11em;font-size:clamp(40px,6.4vw,88px);line-height:.95;animation:mh2-up .8s .05s var(--ease) both}
+.mh2-grad{background:linear-gradient(100deg,var(--accent-2,var(--accent)) 0%,var(--accent) 45%,var(--maple-red,#e0342f) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  background-size:200% 100%;animation:mh2-sheen 8s ease-in-out infinite}
+.mh2 .hero-copy .lede{animation:mh2-up .8s .12s var(--ease) both;max-width:46ch}
+
+/* claim: floating field with glow + availability light (states come from the existing #claim-status) */
+.mh2-claim{display:flex!important;align-items:stretch;gap:8px;padding:8px!important;border-radius:22px!important;max-width:600px!important;animation:mh2-up .8s .18s var(--ease) both;
+  background:color-mix(in srgb,var(--panel) 78%,transparent)!important;border:1px solid var(--line-strong)!important;
+  box-shadow:0 24px 60px -30px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.02) inset!important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  transition:border-color .25s,box-shadow .35s}
+.mh2-claim:focus-within{border-color:color-mix(in srgb,var(--accent) 70%,var(--line))!important;box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 16%,transparent),0 24px 60px -24px var(--accent-glow,var(--accent))!important}
+.mh2-claim:has(+ #claim-status.good){border-color:color-mix(in srgb,var(--good) 70%,var(--line))!important}
+.mh2-claim:has(+ #claim-status.bad){border-color:color-mix(in srgb,var(--bad) 70%,var(--line))!important}
+.mh2-field{position:relative;flex:1;min-width:0;display:flex;align-items:center;gap:4px;padding:18px 40px 4px 14px;border-radius:15px;background:color-mix(in srgb,var(--bg) 55%,transparent)}
+.mh2-field .claim-ico{width:20px;height:20px;flex:none;margin-right:6px;fill:var(--accent)}
+.mh2-prefix{flex:none;font:600 clamp(14px,2.2vw,17px)/1 var(--sans);color:var(--muted);white-space:nowrap}
+.mh2-field input{flex:1;min-width:0;height:34px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;
+  font:650 clamp(16px,2.4vw,19px)/1 var(--sans)!important;color:var(--text)!important}
+.mh2-field input::placeholder{color:var(--dim)}
+.mh2-float-l{position:absolute;left:14px;top:9px;font:600 10.5px/1 var(--mono)!important;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-t,var(--accent))!important;pointer-events:none}
+.mh2-avail{position:absolute;right:14px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:var(--line-strong);transition:background .25s,box-shadow .25s}
+.mh2-claim:has(+ #claim-status.wait) .mh2-avail{background:transparent;border:2px solid var(--accent);border-right-color:transparent;animation:mh2-spin .8s linear infinite}
+.mh2-claim:has(+ #claim-status.good) .mh2-avail{background:var(--good);box-shadow:0 0 12px var(--good)}
+.mh2-claim:has(+ #claim-status.bad) .mh2-avail{background:var(--bad);box-shadow:0 0 12px var(--bad)}
+.mh2-go{flex:none;height:auto!important;min-height:58px;padding-inline:22px!important;border-radius:15px!important;font-size:15.5px!important;gap:10px}
+.mh2-go i{transition:transform .25s var(--ease)}.mh2-go:hover i{transform:translateX(3px)}
+.mh2 #claim-status{min-height:22px;margin:12px 4px 0;font-size:14px;font-weight:500}
+.mh2 #claim-status.good{color:var(--good)}.mh2 #claim-status.bad{color:var(--bad)}.mh2 #claim-status.wait{color:var(--muted)}
+.mh2 .claim-note{margin-top:4px;font-size:13px;color:var(--dim)}
+@media (max-width:560px){.mh2-claim{flex-direction:column}.mh2-go{min-height:52px;width:100%}.mh2-field{padding-right:36px}}
+
+.mh2-proof{list-style:none;display:flex;flex-wrap:wrap;gap:8px 18px;margin:22px 0 0;padding:0;animation:mh2-up .8s .26s var(--ease) both}
+.mh2-proof li{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
+.mh2-proof i{color:var(--accent-t,var(--accent))}
+
+/* stage: live example profile with glass chips */
+.mh2 .stage{animation:mh2-up .9s .15s var(--ease) both}
+.mh2-ring{position:absolute;z-index:-1;width:min(520px,92%);aspect-ratio:1;top:6%;border-radius:50%;border:1px dashed color-mix(in srgb,var(--accent) 35%,transparent);animation:mh2-rot 60s linear infinite;pointer-events:none}
+.mh2-ring::after{content:'';position:absolute;top:-5px;left:50%;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 16px var(--accent)}
+.mh2-demo{position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:3;padding:5px 11px;border-radius:999px;font:600 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);background:color-mix(in srgb,var(--panel) 80%,transparent);border:1px solid var(--line)}
+.hero-card.mh2-swap{animation:mh2-swap .6s var(--ease)}
+.mh2-chip{position:absolute;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 14px 10px 10px;border-radius:16px;pointer-events:none;
+  background:color-mix(in srgb,var(--panel-solid,var(--panel)) 72%,transparent);border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:0 20px 40px -20px rgba(0,0,0,.6)}
+.mh2-chip>i{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--grad-accent);color:var(--on-accent,#fff)}
+.mh2-chip span{display:flex;flex-direction:column;gap:2px}.mh2-chip b{font-size:13px;color:var(--text)}.mh2-chip small{font-size:11.5px;color:var(--muted)}
+.mh2-chip.c1{left:-4%;top:30%;animation:mh2-float 7s ease-in-out infinite}
+.mh2-chip.c2{right:-4%;top:62%;animation:mh2-float 8s ease-in-out -3s infinite}
+@media (max-width:860px){.mh2-chip.c1{left:0;top:18%}.mh2-chip.c2{right:0;top:70%}}
+@media (max-width:420px){.mh2-chip{display:none}}
+.mh2 .theme-pick{flex-wrap:wrap;justify-content:center;padding:10px 14px;border-radius:18px;background:color-mix(in srgb,var(--panel) 72%,transparent);border:1px solid var(--line);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);max-width:100%}
+.mh2 .theme-pick>span{display:flex;gap:6px;align-items:baseline}
+.mh2 .theme-pick .mh2-tname{color:var(--text);font-weight:600;min-width:4ch}
+.mh2 .theme-pick .sw{flex-wrap:wrap;justify-content:center;gap:7px}
+
+/* ── games ticker ── */
+.mh2-ticker{border:0!important;background:none!important;padding:0!important}
+.mh2-tick-h{text-align:center;margin:0 0 14px;font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.mh2-tick-view{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.mh2-ticker .ticker-track{gap:12px;padding:6px 0;animation-duration:56s}
+.mh2-ticker .gt{display:inline-flex;align-items:center;gap:12px;padding:10px 18px 10px 10px;border-radius:18px;white-space:nowrap;
+  border:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--g1) 14%,transparent),transparent 60%),color-mix(in srgb,var(--panel) 88%,transparent);
+  transition:transform .3s var(--ease),border-color .3s}
+.mh2-ticker .gt:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--g1) 60%,var(--line))}
+.mh2-ticker .gt-mk{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:800 13px/1 var(--display);letter-spacing:.02em;color:#fff;
+  background:linear-gradient(140deg,var(--g2),var(--g1));box-shadow:0 8px 18px -10px var(--g1)}
+.mh2-ticker .gt span{display:flex;flex-direction:column;gap:3px;padding:0!important;border:0!important;background:none!important}
+.mh2-ticker .gt span b{font-size:14.5px;color:var(--text)}.mh2-ticker .gt span small{font-size:11.5px;color:var(--muted)}
+.mh2-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.mh2-ticker .ticker-track{animation:none}.mh2-tick-view{overflow-x:auto;scrollbar-width:none}}
+
+/* ── section heads ── */
+.mh2-kicker{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--accent-t,var(--accent))}
+.mh2-head h2{font-size:clamp(28px,4vw,48px);letter-spacing:-.035em;line-height:1.02;max-width:18ch}
+
+/* ── bento ── */
+.mh2-bento .bx{grid-row:auto!important;transition:transform .35s var(--ease),border-color .35s,box-shadow .35s}
+.mh2-bento .bx::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:radial-gradient(60% 60% at 80% 0%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%)}
+.mh2-bento .bx:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--accent) 35%,var(--line));box-shadow:0 30px 60px -36px var(--accent-glow,rgba(0,0,0,.6))}
+.mh2-bento .bx:hover::after{opacity:1}
+.bx-tag{align-self:flex-start;margin-bottom:12px;padding:5px 10px;border-radius:999px;font:600 10.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-t,var(--accent));
+  background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+.mh2-bento .b-copy{grid-column:1/4!important;grid-row:span 2!important}
+.mh2-bento .b-qr{grid-column:4/7!important}
+.mh2-bento .b-time{grid-column:4/7!important}
+.mh2-bento .b-social{grid-column:1/4!important}
+.mh2-bento .b-themes{grid-column:4/7!important}
+.mh2-bento .b-music{grid-column:1/3!important}
+.mh2-bento .b-anime{grid-column:3/5!important}
+.mh2-bento .b-shop{grid-column:5/7!important}
+.mh2-bento .b-save{grid-column:1/7!important}
+.mh2-qr{position:absolute;right:22px;top:22px;width:78px;height:78px;border-radius:18px;display:grid;place-items:center;font-size:44px;color:var(--text);
+  background:color-mix(in srgb,var(--bg) 70%,transparent);border:1px solid var(--line);box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 8%,transparent)}
+.mh2-qr::after{content:'';position:absolute;left:10px;right:10px;height:2px;top:12px;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:mh2-scan 2.8s ease-in-out infinite}
+.b-qr h3{max-width:12ch}
+.mh2-hours{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+.mh2-dial{display:grid;grid-template-columns:repeat(24,1fr);gap:3px}
+.mh2-dial i{height:18px;border-radius:4px;background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.mh2-dial i.on{background:var(--good);box-shadow:0 0 8px color-mix(in srgb,var(--good) 50%,transparent)}
+.mh2-orbit{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px}
+.mh2-orbit span{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:20px;color:var(--text);border:1px solid var(--line);
+  background:color-mix(in srgb,var(--panel) 85%,transparent);animation:mh2-bob 4s ease-in-out infinite;animation-delay:calc(var(--i) * -.6s)}
+.mh2-orbit span:nth-child(1) i{color:#5865f2}.mh2-orbit span:nth-child(3) i{color:#ff0033}.mh2-orbit span:nth-child(4) i{color:#e1306c}.mh2-orbit span:nth-child(5) i{color:#9146ff}.mh2-orbit span:nth-child(6) i{color:#25d366}
+.b-music{background:linear-gradient(160deg,color-mix(in srgb,#1ed760 10%,var(--panel-solid)),var(--panel-solid) 70%)!important}
+.b-anime{background:linear-gradient(160deg,color-mix(in srgb,#6c8cff 12%,var(--panel-solid)),var(--panel-solid) 70%)!important}
+@media (width<=980px){
+  .mh2-bento{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .mh2-bento .bx{grid-column:auto!important;grid-row:auto!important}
+  .mh2-bento .b-copy,.mh2-bento .b-themes,.mh2-bento .b-social,.mh2-bento .b-save{grid-column:1/-1!important}
+}
+@media (width<=560px){.mh2-bento{grid-template-columns:minmax(0,1fr)!important}.mh2-bento .bx{grid-column:1/-1!important}.mh2-qr{width:60px;height:60px;font-size:34px}}
+
+/* ── steps ── */
+.mh2-steps>div{position:relative;padding:22px;border-radius:22px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 85%,transparent)}
+.mh2-steps>div::before{display:none!important}
+.mh2-n{display:inline-block;margin-bottom:14px;font:700 13px/1 var(--mono);color:var(--accent-t,var(--accent));padding:7px 10px;border-radius:10px;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+
+/* ── discovery ── */
+#explore .ex-box{border-radius:24px;padding:clamp(12px,2.4vw,20px);border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 82%,transparent);box-shadow:var(--shadow)}
+#explore .ex-search{position:relative;display:flex;align-items:center;border-radius:16px;transition:box-shadow .25s}
+#explore .ex-search:focus-within{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
+#explore .ex-tabs [aria-selected=true]{background:var(--grad-accent)!important;color:var(--on-accent,#fff)!important;border-color:transparent!important}
+#explore .ex-list:empty{min-height:220px;border-radius:16px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--ink) 5%,transparent),transparent) 0 0/50% 100% no-repeat,
+  repeating-linear-gradient(180deg,color-mix(in srgb,var(--ink) 4%,transparent) 0 58px,transparent 58px 70px);animation:mh2-shim 1.4s linear infinite}
+#explore .ex-list>li{transition:transform .25s var(--ease),background .25s}
+@media (hover:hover){#explore .ex-list>li:hover{transform:translateX(3px)}}
+
+/* ── join / auth ── */
+.join{position:relative;isolation:isolate}
+.join::before{content:'';position:absolute;z-index:-1;inset:-10% -5%;pointer-events:none;background:radial-gradient(50% 60% at 80% 50%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%)}
+.mh2-perks{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:10px}
+.mh2-perks li{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text)}
+.mh2-perks i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.join .auth{border-radius:28px!important;padding:clamp(18px,3vw,28px)!important;background:color-mix(in srgb,var(--panel-solid,var(--panel)) 86%,transparent)!important;
+  border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line))!important;box-shadow:0 40px 80px -40px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.02) inset!important;
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.join .auth-tabs{padding:4px;border-radius:14px;background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.join .auth-tabs button{border-radius:11px}
+.join .auth-tabs [aria-selected=true]{background:var(--panel-solid,var(--panel))!important;color:var(--text)!important;box-shadow:var(--shadow-sm)}
+.join #auth-submit{min-height:52px;font-size:15.5px}
+
+/* ── motion ── */
+@keyframes mh2-up{from{opacity:0;transform:translate3d(0,16px,0)}to{opacity:1;transform:none}}
+@keyframes mh2-drift{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-4%,6%,0) scale(1.08)}}
+@keyframes mh2-sheen{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+@keyframes mh2-ping{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 0%,transparent)}}
+@keyframes mh2-spin{to{transform:rotate(360deg)}}
+@keyframes mh2-rot{to{transform:rotate(360deg)}}
+@keyframes mh2-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-10px,0)}}
+@keyframes mh2-bob{0%,100%{transform:none}50%{transform:translateY(-4px)}}
+@keyframes mh2-scan{0%,100%{top:12px}50%{top:calc(100% - 14px)}}
+@keyframes mh2-shim{from{background-position:-50% 0,0 0}to{background-position:150% 0,0 0}}
+@keyframes mh2-swap{0%{filter:saturate(1);transform:var(--tilt,none) scale(1)}35%{filter:saturate(1.6) brightness(1.15);transform:scale(.97)}100%{filter:none;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .mh2-aura i,.mh2-grad,.mh2-dot,.mh2-ring,.mh2-chip,.mh2-orbit span,.mh2-qr::after,#explore .ex-list:empty,.mh2-claim:has(+ #claim-status.wait) .mh2-avail{animation:none!important}
+  .mh2-pill,.mh2 .hero-copy h1.mh-title,.mh2 .hero-copy .lede,.mh2-claim,.mh2-proof,.mh2 .stage,.hero-card.mh2-swap{animation:none!important}
+  .mh2-bento .bx,.mh2-ticker .gt{transition:none}
+}
+/* never let decorative layers widen the page */
+#maple-home,.mh2-ticker,.mh2-bento{max-width:100%}
+.pg-main,#app{overflow-x:clip}

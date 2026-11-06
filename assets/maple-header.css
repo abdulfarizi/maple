@@ -1,0 +1,66 @@
+/* M-ID · global header (v31) — one header on the homepage, Studio, your profile and everyone else's */
+
+/* the header no longer disappears on star-layout cards; the card sits below it */
+body.star-mode .topbar{display:flex!important}
+body.pager-on.star-mode .topbar,body.pg-anim.pager-on.star-mode .topbar{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+.pg.is-full{position:relative}
+.pg.is-full>.pg-main{position:absolute;top:var(--tb-h,64px);left:0;right:0;bottom:0;height:auto!important}
+body:not(.pager-on) .star-frame{top:var(--tb-h,64px);height:calc(100% - var(--tb-h,64px))}
+body.has-dock.star-mode:not(.pager-on) .star-frame{height:calc(100vh - var(--tb-h,64px));height:calc(100dvh - var(--tb-h,64px))}
+
+/* look: frosted ink bar with a maple hairline */
+.topbar{position:sticky;top:0;z-index:30;padding-top:max(10px,env(safe-area-inset-top,0px))!important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 94%,transparent),color-mix(in srgb,var(--bg) 84%,transparent))!important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.2)!important;backdrop-filter:blur(14px) saturate(1.2)!important;border-bottom:1px solid transparent!important}
+.topbar::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 55%,var(--line)) 30%,color-mix(in srgb,var(--accent-2,var(--accent)) 45%,var(--line)) 70%,transparent)}
+.topbar .brand{transition:opacity .2s}
+.topbar .brand:hover .leaf-ico{transform:rotate(-12deg) scale(1.05)}
+.topbar .brand .leaf-ico{transition:transform .35s var(--ease)}
+
+/* desktop nav */
+.tb-nav{display:none;align-items:center;gap:2px;margin-right:auto;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--panel) 70%,transparent);border:1px solid var(--line)}
+.tb-nl{position:relative;padding:7px 14px;border-radius:999px;font-size:14px;font-weight:550;color:var(--muted);transition:color .2s,background .2s}
+.tb-nl:hover{color:var(--text)}
+.tb-nl.on{color:var(--text);background:color-mix(in srgb,var(--accent) 14%,var(--panel))}
+.tb-nl:focus-visible,.tb-view:focus-visible,.tb-bell:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (min-width:900px){
+  .tb-nav{display:flex}
+  .topbar .brand{margin-right:14px!important}
+}
+
+/* profile "View" control + alerts */
+.tb-view,.tb-bell{position:relative;flex:none;height:38px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 13px;border-radius:999px;cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 9%,var(--panel-solid,var(--panel)));color:var(--text);
+  font:600 13px/1 var(--sans);box-shadow:var(--shadow-sm);transition:transform .2s var(--ease),border-color .2s}
+.tb-view:active,.tb-bell:active{transform:scale(.94)}
+.tb-view[hidden],.tb-bell[hidden]{display:none}
+.tb-view i{color:var(--accent-t,var(--accent))}
+.tb-bell{width:38px;padding:0;border-color:var(--line);background:var(--panel-solid,var(--panel));display:none}
+.tb-bell b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--accent);color:var(--on-accent,#fff);font:700 10px/18px var(--mono,monospace);box-shadow:0 0 0 2px var(--bg)}
+.tb-bell b[hidden]{display:none}
+@media (min-width:900px){.tb-bell:not([hidden]){display:inline-flex}}
+@media (max-width:520px){.tb-view{width:38px;padding:0}.tb-view span{display:none}}
+
+.tv-pop{position:fixed;z-index:4100;width:min(calc(100vw - 20px),330px);max-height:min(70vh,520px);overflow:auto;padding:14px;border-radius:20px;
+  background:color-mix(in srgb,var(--panel-solid,var(--panel)) 94%,transparent);border:1px solid var(--line-strong);box-shadow:0 30px 60px -24px rgba(0,0,0,.65);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);opacity:0;transform:translate3d(0,-6px,0) scale(.98);transform-origin:top right;transition:opacity .2s,transform .25s var(--ease)}
+.tv-pop.in{opacity:1;transform:none}
+.tv-pop[hidden]{display:none}
+.tv-h{margin:0 0 10px;font-size:13px;color:var(--muted)}.tv-h b{color:var(--text)}
+.tv-l{margin:12px 0 7px;font:600 10.5px/1 var(--mono,monospace);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.tv-sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.tv-sw button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:12px;border:1px solid var(--line);font-size:12.5px;font-weight:550;color:var(--text);transition:border-color .2s,background .2s}
+.tv-sw button i{flex:none;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--c2),var(--c1));box-shadow:0 0 0 2px color-mix(in srgb,var(--c1) 25%,transparent)}
+.tv-sw button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-sw button[aria-pressed=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.tv-sw button:focus-visible,.tv-seg button:focus-visible,.tv-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tv-seg{display:flex;padding:3px;border-radius:12px;background:color-mix(in srgb,var(--text) 6%,transparent)}
+.tv-seg button{all:unset;flex:1;text-align:center;cursor:pointer;padding:8px 6px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted)}
+.tv-seg button[aria-pressed=true]{background:var(--panel-solid,var(--panel));color:var(--text);box-shadow:var(--shadow-sm)}
+.tv-row{all:unset;box-sizing:border-box;width:100%;margin-top:12px;cursor:pointer;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--text)}
+.tv-row small{margin-left:auto;font-weight:500;color:var(--dim);font-size:11.5px}
+.tv-foot{margin:12px 0 0;font-size:11.5px;color:var(--dim)}
+
+@media (max-width:359px){.tb-view{width:34px;height:34px}}
+@media (prefers-reduced-motion:reduce){.tv-pop,.topbar .brand .leaf-ico{transition:none}}

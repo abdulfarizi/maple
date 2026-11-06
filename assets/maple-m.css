@@ -87,11 +87,11 @@ html.fm-lock{overflow:hidden}
 @keyframes fm-pulse{50%{opacity:.25}}
 
 /* ── chat: full screen, bar pinned to the bottom ── */
-.fm-th{position:fixed;inset:0;z-index:3400;display:flex;flex-direction:column;height:100dvh;background:var(--bg);color:var(--text)}
+.fm-th{position:fixed;inset:0;z-index:3400;display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);color:var(--text)}
 .fm-th-head{flex:none;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 8px) 14px 8px 8px;background:var(--panel-solid,var(--bg))}
 .fm-th-head h2{margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fm-th-chat{flex:1;min-height:0;max-height:none;margin:0;padding:14px 14px 8px;gap:6px;max-width:720px;width:100%;align-self:center}
-.fm-th-err{margin:0 16px 6px;max-width:720px;align-self:center}
+.fm-th .fm-th-chat{flex:1 1 0;min-height:0;max-height:none!important;overflow-y:auto;margin:0;padding:14px 14px 8px;gap:6px;max-width:720px;width:100%;align-self:center}
+.fm-th .fm-th-err{margin:0 16px 6px;max-width:720px;align-self:center}
 .fm-th .fm-cb{max-width:720px;width:100%;align-self:center}
 .fm-th .fm-b{border:0;background:var(--panel);max-width:80%}
 .fm-th .fm-b.me{background:var(--accent);color:var(--on-accent,#fff)}

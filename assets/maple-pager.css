@@ -68,3 +68,8 @@ body.pager-on .dock-i span{max-width:64px;overflow:hidden;text-overflow:ellipsis
   transform-origin:center;will-change:transform,width;transition:opacity .22s ease}
 .dock.dragging .dock-ind{filter:brightness(1.15)}
 @media (prefers-reduced-motion:reduce){.pager-track{scroll-behavior:auto}.pg-layer.in,.pg-layer.out,.pg-layer.swap{animation:none}}
+/* v33: panes that aren't on screen stop animating, so the visible one gets the phone's full frame budget */
+body.pager-on:not([data-page=home]) #pg-home *,body.pager-on:not([data-page=home]) #pg-home *::before,body.pager-on:not([data-page=home]) #pg-home *::after,
+body.pager-on:not([data-page=explore]) #pg-explore *,
+body.pager-on:not([data-page=card]) #pg-card *,
+body.pager-on:not([data-page=profile]) #pg-profile *{animation-play-state:paused!important}
