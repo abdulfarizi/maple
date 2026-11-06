@@ -2,7 +2,7 @@
 const LINK = /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z]{2,5}\/)?(?:embed\/)?(track|album|playlist|episode)\/([A-Za-z0-9]{22})/i;
 let token = { v: "", exp: 0 };
 
-async function appToken(id, secret) {
+export async function appToken(id, secret) {
   if (token.v && token.exp > Date.now() + 30000) return token.v;
   const r = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
