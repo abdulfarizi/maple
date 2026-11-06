@@ -1,5 +1,7 @@
-// /api/yt-meta?url=<youtube link>  →  { id, url, title, artist, art }
+// /api/yt-meta?url=<youtube link>  →  { id, url, title, artist, songTitle, songArtist, album, cover, art }
 // Uses YouTube's public oEmbed endpoint on the server (the browser can't call it: no CORS). No API key needed.
+// Then looks the song up on iTunes / Deezer for its album cover and clean name (art = album cover if found, else the video thumbnail).
+import { findCover } from "./_cover.mjs";
 const ID = /^[A-Za-z0-9_-]{11}$/;
 function parse(raw) {
   const s = String(raw || "").trim();
@@ -25,7 +27,13 @@ export async function GET(request) {
     const r = await fetch("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent(url));
     if (!r.ok) return send(r.status === 404 || r.status === 401 ? 404 : 502, { error: "That video isn't available or can't be embedded." });
     const d = await r.json();
-    return send(200, { id, url, title: String(d.title || ""), artist: String(d.author_name || "").replace(/\s*-\s*Topic$/i, "").replace(/VEVO$/i, ""), art: "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg", source: "oembed" });
+    const author = String(d.author_name || "").replace(/\s*-\s*Topic$/i, "").replace(/VEVO$/i, "");
+    const c = await findCover(String(d.title || ""), author).catch(() => null);
+    return send(200, {
+      id, url, title: String(d.title || ""), artist: author,
+      songTitle: c ? c.title : "", songArtist: c ? c.artist : "", album: c ? c.album : "", durationMs: c ? c.durationMs : 0,
+      cover: c ? c.art : "", art: c ? c.art : "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg", source: "oembed",
+    });
   } catch {
     return send(502, { error: "Couldn't reach YouTube." });
   }
