@@ -129,3 +129,25 @@ body.mp-inline .mpx-mini{display:none !important}
 .mpx-yt-wrap{width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 14px 34px -16px rgba(0,0,0,.8)}
 .mpx-yt-wrap[hidden]{display:none}
 .mpx-yt-wrap iframe{display:block;border:0;width:100%;height:100%}
+
+/* v36-6 · YouTube plays audio only: the player stays out of sight (it is only shown if a browser refuses to start it without a tap) */
+.mpx-yt-wrap:not(.mpx-yt-show){position:absolute;left:0;top:0;width:320px;height:180px;opacity:0;pointer-events:none;overflow:hidden;z-index:-1;box-shadow:none;border-radius:0;aspect-ratio:auto}
+.mpx-yt-wrap.mpx-yt-show{box-shadow:0 0 0 2px #ff3d3d,0 14px 34px -16px rgba(0,0,0,.8)}
+
+/* v36-6 · manual lyric search */
+.mpx-lyrics>header{gap:10px}
+.mpx-lyrics>header .mpx-lsrc{margin-left:auto;font-size:11px;color:rgba(255,255,255,.55)}
+.mpx-lfind{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:12px;font-weight:600;color:#fff;background:rgba(255,255,255,.12);border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.mpx-lfind:hover{background:rgba(255,255,255,.2)}
+.mpx-lfind.big{margin-top:12px;font-size:13px;padding:9px 16px;background:#fff;color:#111}
+.mpx-lform{display:flex;gap:8px;padding:4px 18px 10px;flex-wrap:wrap}
+.mpx-lform[hidden],.mpx-lres[hidden]{display:none}
+.mpx-lform input{flex:1 1 130px;min-width:0;font:inherit;font-size:14px;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:9px 11px}
+.mpx-lform input::placeholder{color:rgba(255,255,255,.45)}
+.mpx-lform button{font:inherit;font-weight:700;font-size:13px;color:#111;background:#fff;border:0;border-radius:10px;padding:9px 16px;cursor:pointer}
+.mpx-lres{display:flex;flex-direction:column;gap:2px;padding:0 12px 10px;max-height:34vh;overflow:auto}
+.mpx-lmsg{font-size:12.5px;color:rgba(255,255,255,.65);padding:6px 6px 2px}
+.mpx-lrow{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;text-align:left;font:inherit;color:#fff;background:transparent;border:0;border-radius:10px;padding:9px 10px;cursor:pointer}
+.mpx-lrow:hover,.mpx-lrow:focus-visible{background:rgba(255,255,255,.12)}
+.mpx-lrow b{font-size:14px}.mpx-lrow span{font-size:12px;color:rgba(255,255,255,.6)}
+.mpx-lrow em{font-style:normal;font-size:10.5px;font-weight:700;color:#4ade80;margin-left:auto}

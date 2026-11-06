@@ -75,7 +75,9 @@
       + '<div class="mpx-embed-wrap"><div id="mpx-embed"></div></div>'
       + '<div class="mpx-yt-wrap" hidden><div id="mpx-yt"></div></div>'
       + '<p class="mpx-note"></p></div>'
-      + '<section class="mpx-lyrics" aria-label="Lyrics"><header><b>Lyrics</b><small class="mpx-lsrc"></small></header><div class="mpx-lbody" tabindex="0"></div></section>'
+      + '<section class="mpx-lyrics" aria-label="Lyrics"><header><b>Lyrics</b><small class="mpx-lsrc"></small><button type="button" class="mpx-lfind" data-mpx="lsearch" aria-label="Search lyrics manually"><i class="fa-solid fa-magnifying-glass"></i> Search</button></header>'
+      + '<form class="mpx-lform" hidden><input name="title" placeholder="Song title" autocomplete="off" aria-label="Song title"><input name="artist" placeholder="Artist (optional)" autocomplete="off" aria-label="Artist"><button type="submit">Find</button></form>'
+      + '<div class="mpx-lres" hidden></div><div class="mpx-lbody" tabindex="0"></div></section>'
       + '</div>';
     document.body.appendChild(mini); document.body.appendChild(full);
     el = { mini: mini, sheet: full, lbody: full.querySelector('.mpx-lbody'), seek: full.querySelector('.mpx-seek') };
@@ -87,10 +89,13 @@
       else if (a === 'toggle') toggle();
       else if (a === 'stop') stop();
       else if (a === 'back' || a === 'fwd') skip(a === 'fwd' ? 10 : -10);
+      else if (a === 'lsearch') lyricForm(true);
+      else if (a === 'lpick') lyricPick(Number(b.dataset.i));
       else if (a === 'login') connect();
       else if (a === 'disconnect') disconnect();
     };
     mini.addEventListener('click', act); full.addEventListener('click', act);
+    full.querySelector('.mpx-lform').addEventListener('submit', function (e) { e.preventDefault(); lyricManual(this.elements.title.value, this.elements.artist.value); });
     el.seek.addEventListener('change', function () { if (S.dur) seekMs(S.dur * el.seek.value / 1000); });
     el.lbody.addEventListener('wheel', function () { lyr.userAt = Date.now(); }, { passive: true });
     el.lbody.addEventListener('touchmove', function () { lyr.userAt = Date.now(); }, { passive: true });
@@ -146,7 +151,7 @@
     var isSp = S.src === 'spotify', canSeek = S.engine === 'file' || S.engine === 'yt' || isSp;
     var wrap = el.sheet.querySelector('.mpx-embed-wrap');
     wrap.hidden = S.engine !== 'embed'; wrap.classList.toggle('mpx-ghost', !S.reveal);
-    var yw = el.sheet.querySelector('.mpx-yt-wrap'); if (yw) yw.hidden = S.engine !== 'yt';
+    var yw = el.sheet.querySelector('.mpx-yt-wrap'); if (yw) { yw.hidden = S.engine !== 'yt'; yw.classList.toggle('mpx-yt-show', !!S.reveal); }
     el.sheet.querySelectorAll('[data-mpx=back],[data-mpx=fwd]').forEach(function (b) { b.hidden = !canSeek; });
     el.sheet.querySelector('.mpx-prog').hidden = !(canSeek && S.dur > 0);
     el.sheet.querySelector('.mpx-note').innerHTML = noteHTML(t);
@@ -571,7 +576,12 @@
     add(title, '');
     return out.slice(0, 5);
   }
-  function lrcFetch(path) { return fetch('https://lrclib.net/api/' + path).then(function (r) { if (r.status === 404) return null; if (!r.ok) throw new Error('lrclib ' + r.status); return r.json(); }); }
+  function lrcRead(r) { if (r.status === 404) return null; if (!r.ok) throw new Error('lrclib ' + r.status); return r.json(); }
+  function lrcFetch(path) {
+    return fetch('https://lrclib.net/api/' + path).then(lrcRead).catch(function () {   // blocked / offline / CORS → ask our own server to fetch it
+      return fetch('/api/lyrics?p=' + encodeURIComponent(path)).then(lrcRead);
+    });
+  }
   function hasLyrics(d) { return !!(d && (d.syncedLyrics || d.plainLyrics || d.instrumental)); }
   function pickBest(list) {
     list = (Array.isArray(list) ? list : []).filter(hasLyrics); if (!list.length) return null;
@@ -596,23 +606,52 @@
       return steps[i++]().catch(function () { failed++; return null; }).then(function (d) { return d || next(); });
     })();
   }
+  var NOLYR = '<i class="fa-regular fa-file-lines"></i><b>No lyrics found for this song</b><span>Lyrics aren’t available for every track.</span><button type="button" class="mpx-lfind big" data-mpx="lsearch"><i class="fa-solid fa-magnifying-glass"></i> Search lyrics manually</button>';
+  function showLyrics(d) {
+    if (!d) return lyricState(NOLYR);
+    if (d.instrumental) return lyricState('<i class="fa-solid fa-guitar"></i><b>Instrumental</b><span>Just the music on this one.</span>');
+    lyr.lines = parseLrc(d.syncedLyrics); lyr.plain = d.plainLyrics || '';
+    el.sheet.querySelector('.mpx-lsrc').innerHTML = (lyr.lines ? 'Synced · ' : '') + 'via <a href="https://lrclib.net" target="_blank" rel="noopener noreferrer">LRCLIB</a>';
+    if (lyr.lines) el.lbody.innerHTML = '<ol class="mpx-lines">' + lyr.lines.map(function (l, i) { return '<li data-i="' + i + '">' + (esc(l.x) || '♪') + '</li>'; }).join('') + '</ol>';
+    else if (lyr.plain) el.lbody.innerHTML = '<div class="mpx-plain">' + esc(lyr.plain).replace(/\n/g, '<br>') + '</div><p class="mpx-lhint">These lyrics aren’t time-synced, so they don’t follow along.</p>';
+    else return lyricState(NOLYR);
+    lyr.msg = ''; lyr.ver++; lyr.cur = -1; syncLyric(); bcast();
+  }
+  /* manual search: the person types a title / artist, picks the right result */
+  function lyricForm(on) {
+    var f = el.sheet.querySelector('.mpx-lform'), t = S.track || {}; f.hidden = on === false ? true : !f.hidden || on === true ? false : true;
+    if (!f.hidden) { var c = lyrCandidates(t)[0] || {}; if (!f.elements.title.value) f.elements.title.value = c.title || tidy(t.title); if (!f.elements.artist.value) f.elements.artist.value = c.artist || ''; setTimeout(function () { f.elements.title.focus(); }, 30); }
+    else el.sheet.querySelector('.mpx-lres').hidden = true;
+  }
+  function lyricManual(title, artist) {
+    var q = (String(artist || '') + ' ' + String(title || '')).trim(), box = el.sheet.querySelector('.mpx-lres'); if (!q) return;
+    box.hidden = false; box.innerHTML = '<p class="mpx-lmsg"><i class="fa-solid fa-circle-notch fa-spin"></i> Searching…</p>';
+    var tn = encodeURIComponent(String(title || '').trim()), an = String(artist || '').trim();
+    var first = tn ? 'search?track_name=' + tn + (an ? '&artist_name=' + encodeURIComponent(an) : '') : 'search?q=' + encodeURIComponent(q);
+    lrcFetch(first).then(function (l) { return (Array.isArray(l) && l.length) ? l : lrcFetch('search?q=' + encodeURIComponent(q)); }).then(function (list) {
+      list = (Array.isArray(list) ? list : []).filter(hasLyrics).slice(0, 8); lyr.results = list;
+      if (!list.length) { box.innerHTML = '<p class="mpx-lmsg">Nothing found. Try just the song title, or check the spelling.</p>'; return; }
+      box.innerHTML = list.map(function (d, i) {
+        return '<button type="button" class="mpx-lrow" data-mpx="lpick" data-i="' + i + '"><b>' + esc(d.trackName || d.name || 'Untitled') + '</b><span>' + esc(d.artistName || '') + (d.albumName ? ' · ' + esc(d.albumName) : '') + '</span>' + (d.syncedLyrics ? '<em>Synced</em>' : '') + '</button>';
+      }).join('');
+    }).catch(function () { box.innerHTML = '<p class="mpx-lmsg">Couldn’t reach the lyrics service. Check your connection and try again.</p>'; });
+  }
+  function lyricPick(i) {
+    var d = lyr.results && lyr.results[i], t = S.track; if (!d || !t) return;
+    var key = t.url + '|' + t.title + '|' + t.artist + '|' + (S.dur ? Math.round(S.dur / 5000) : 0);
+    lyr.key = key; lyr.manual = { url: t.url, d: d };
+    showLyrics(d); lyricForm(false);
+  }
   function loadLyrics() {
     var t = S.track; if (!(S.open || inlineNow() || S.deckLyr) || !lyrOk(t)) return;
-    if (!t.title) { lyricState('<i class="fa-solid fa-circle-notch fa-spin"></i> Looking up the song…'); return; }
+    if (!t.title) { lyricState('<i class="fa-solid fa-circle-notch fa-spin"></i> Looking up the song…<button type="button" class="mpx-lfind big" data-mpx="lsearch"><i class="fa-solid fa-magnifying-glass"></i> Search lyrics manually</button>'); return; }
     var key = t.url + '|' + t.title + '|' + t.artist + '|' + (S.dur ? Math.round(S.dur / 5000) : 0); if (lyr.key === key) return;
     lyr.key = key; lyr.lines = null; lyr.plain = ''; lyr.cur = -1;
     lyricState('<i class="fa-solid fa-circle-notch fa-spin"></i> Finding lyrics…');
     el.sheet.querySelector('.mpx-lsrc').innerHTML = '';
-    findLyrics(t).then(function (d) {
+    (lyr.manual && lyr.manual.url === t.url ? Promise.resolve(lyr.manual.d) : findLyrics(t)).then(function (d) {
       if (lyr.key !== key) return;
-      if (!d) return lyricState('<i class="fa-regular fa-file-lines"></i><b>No lyrics for this song yet</b><span>Lyrics aren’t available for every track.</span>');
-      if (d.instrumental) return lyricState('<i class="fa-solid fa-guitar"></i><b>Instrumental</b><span>Just the music on this one.</span>');
-      lyr.lines = parseLrc(d.syncedLyrics); lyr.plain = d.plainLyrics || '';
-      el.sheet.querySelector('.mpx-lsrc').innerHTML = (lyr.lines ? 'Synced · ' : '') + 'via <a href="https://lrclib.net" target="_blank" rel="noopener noreferrer">LRCLIB</a>';
-      if (lyr.lines) el.lbody.innerHTML = '<ol class="mpx-lines">' + lyr.lines.map(function (l, i) { return '<li data-i="' + i + '">' + (esc(l.x) || '♪') + '</li>'; }).join('') + '</ol>';
-      else if (lyr.plain) el.lbody.innerHTML = '<div class="mpx-plain">' + esc(lyr.plain).replace(/\n/g, '<br>') + '</div><p class="mpx-lhint">These lyrics aren’t time-synced, so they don’t follow along.</p>';
-      else lyricState('<i class="fa-regular fa-file-lines"></i><b>No lyrics for this song yet</b>');
-      lyr.msg = ''; lyr.ver++; lyr.cur = -1; syncLyric(); bcast();
+      showLyrics(d);
     }).catch(function () {
       if (lyr.key !== key) return; lyr.key = '';
       lyricState('<i class="fa-solid fa-wifi"></i><b>Lyrics couldn’t load</b><span>Check your connection and reopen the player.</span>');

@@ -11,7 +11,7 @@
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var STATUS = { watching: 'Watching', completed: 'Completed', hold: 'On hold', dropped: 'Dropped', plan: 'Plan to watch' };
   var STATUS_ICON = { watching: 'fa-circle-play', completed: 'fa-circle-check', hold: 'fa-circle-pause', dropped: 'fa-circle-xmark', plan: 'fa-bookmark' };
-  var ART_OK = /^https:\/\/(?:i\.ytimg\.com\/vi\/[A-Za-z0-9_-]{11}\/[a-z0-9]+\.jpg$|i\.scdn\.co|image-cdn-[a-z0-9-]+\.spotifycdn\.com|mosaic\.scdn\.co|[a-z0-9-]+\.anilist\.co|s4\.anilist\.co)\/\S+$|^https:\/\/qebbuxixnqsqjuprfpyv\.supabase\.co\/storage\/v1\/object\/public\/song-media\/[0-9a-f-]{36}\/[a-z0-9]{8,24}-art\.jpg(\?v=[a-z0-9]{1,12})?$/i;
+  var ART_OK = /^https:\/\/i\.ytimg\.com\/vi\/[A-Za-z0-9_-]{11}\/[a-z0-9]+\.jpg$|^https:\/\/(?:i\.scdn\.co|image-cdn-[a-z0-9-]+\.spotifycdn\.com|mosaic\.scdn\.co|is\d-ssl\.mzstatic\.com\/image\/thumb|(?:e-)?cdns?-images\.dzcdn\.net\/images\/cover|[a-z0-9-]+\.anilist\.co|s4\.anilist\.co)\/\S+$|^https:\/\/qebbuxixnqsqjuprfpyv\.supabase\.co\/storage\/v1\/object\/public\/song-media\/[0-9a-f-]{36}\/[a-z0-9]{8,24}-art\.jpg(\?v=[a-z0-9]{1,12})?$/i;
 
   /* ───── Spotify links ───── */
   function spotify(u) {
@@ -34,7 +34,7 @@
     return /^[A-Za-z0-9_-]{11}$/.test(id) ? { type: 'video', id: id, url: 'https://www.youtube.com/watch?v=' + id } : null;
   }
   function ytMeta(y) {
-    var key = 'mx:yt:' + y.id;
+    var key = 'mx:yt2:' + y.id;
     if (metaCache[key]) return metaCache[key];
     try { var c = JSON.parse(sessionStorage.getItem(key) || 'null'); if (c && c.title) return (metaCache[key] = Promise.resolve(c)); } catch (e) {}
     var art = 'https://i.ytimg.com/vi/' + y.id + '/hqdefault.jpg';
@@ -44,7 +44,7 @@
         return fetch('https://noembed.com/embed?url=' + encodeURIComponent(y.url)).then(function (r) { if (!r.ok) throw 0; return r.json(); });
       })
       .then(function (d) {
-        d = d || {}; var o = { url: y.url, type: 'video', title: String(d.title || ''), artist: String(d.artist || d.author_name || '').replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, ''), art: art };
+        d = d || {}; var o = { url: y.url, type: 'video', title: String(d.songTitle || d.title || ''), artist: String(d.songArtist || d.artist || d.author_name || '').replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, ''), art: ART_OK.test(d.cover || '') ? d.cover : art, rawTitle: String(d.title || ''), album: String(d.album || ''), durationMs: d.durationMs || 0 };
         if (o.title) { try { sessionStorage.setItem(key, JSON.stringify(o)); } catch (e) {} }
         return o;
       }).catch(function () { delete metaCache[key]; return { url: y.url, type: 'video', title: '', artist: '', art: art }; });
