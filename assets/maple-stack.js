@@ -67,14 +67,15 @@
   function libHTML() {
     var rows = lib.map(function (x, i) {
       var art = x.art && artOk(x.art) ? '<img src="' + esc(x.art) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '';
-      return '<li class="sk-row" data-sk-key="' + esc((x.title || '').toLowerCase()) + '"><button type="button" data-sk-lib="' + i + '" aria-label="Play ' + esc(x.title || 'song') + '">'
+      return '<li class="sk-row"' + (i >= 8 ? ' hidden data-sk-extra' : '') + ' data-sk-key="' + esc((x.title || '').toLowerCase()) + '"><button type="button" data-sk-lib="' + i + '" aria-label="Play ' + esc(x.title || 'song') + '">'
         + '<span class="sk-rn"><b>' + (i + 1) + '</b><span class="sk-rp" aria-hidden="true">' + I.play + '</span><span class="sk-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>'
         + '<span class="sk-rart"><span class="sk-ph">' + esc((x.title || '♪')[0]) + '</span>' + art + '</span>'
         + '<span class="sk-rt"><b>' + esc(x.title || 'Untitled') + '</b><small>' + esc(x.artist || 'Full song') + '</small></span>'
         + '<span class="sk-rd">' + (x.durationMs ? fmt(x.durationMs) : '') + '</span></button></li>';
     }).join('');
-    return '<section class="sk-sec sk-lib" data-sk-sec="lib" aria-label="Your songs">' + head(P.libTitle || 'Your songs', P.libSub || 'Full songs, no Spotify needed')
-      + '<ol class="sk-rows" role="list">' + rows + '</ol></section>';
+    return '<section class="sk-sec sk-lib" data-sk-sec="music" aria-label="Music I like">' + head(P.musicTitle || 'Music I like', P.musicSub || '')
+      + '<ol class="sk-rows" role="list">' + rows + '</ol>'
+      + (lib.length > 8 ? '<button type="button" class="sk-more" data-sk-more>Show all ' + lib.length + ' songs</button>' : '') + '</section>';
   }
   function miniHTML() {
     return '<div class="sk-mini" data-sk-mini><span class="sk-ap-art"><img alt="" hidden><i class="fa-solid fa-music" aria-hidden="true"></i></span>'
@@ -166,20 +167,14 @@
     if (!root) return;
     var mx = window.MX, html = '';
     var hasPlayer = IN_APP && P.music !== false && (!!(P.song && P.song.audio) || !!(mx && mx.spotify(P.spotify)) || P.layout === 'star');
-    var likes = Array.isArray(P.musicLikes) ? P.musicLikes : [];
-    lib = [];
-    if (IN_APP && P.music !== false) {
-      if (P.song && P.song.audio) lib.push(P.song);
-      likes.forEach(function (x) { if (x && x.audio && !lib.some(function (y) { return y.audio === x.audio; })) lib.push(x); });
-    }
-    var links = [];
-    likes.forEach(function (x, i) { if (!(lib.length && x && x.audio)) links.push({ x: x, i: i }); });
-    var animeOn = !!(mx && mx.animeOn(P)), musicOn = !!(mx && mx.musicOn(P)) && links.length > 0;
+    var likes = Array.isArray(P.musicLikes) ? P.musicLikes.filter(Boolean) : [];
+    var animeOn = !!(mx && mx.animeOn(P)), musicOn = !!(mx && mx.musicOn(P));
+    lib = IN_APP && musicOn ? likes : [];
     /* one player only: the big Audio Player section below replaces the separate "now playing" strip */
     if (animeOn) html += '<section class="sk-sec" data-sk-sec="anime" aria-label="Anime">' + head(P.animeTitle || 'Anime', P.animeSub || '') + pager('anime', 'Anime', P.anime.map(animeCard).join('')) + '</section>';
     if (hasPlayer) html += playerHTML();
-    if (hasPlayer && lib.length) html += libHTML();
-    if (musicOn) html += '<section class="sk-sec" data-sk-sec="music" aria-label="Music I like">' + head(P.musicTitle || 'Music I like', P.musicSub || '') + pager('music', 'Music I like', links.map(function (o) { return songCard(o.x, o.i); }).join('')) + '</section>';
+    if (musicOn && lib.length) html += libHTML();
+    else if (musicOn) html += '<section class="sk-sec" data-sk-sec="music" aria-label="Music I like">' + head(P.musicTitle || 'Music I like', P.musicSub || '') + pager('music', 'Music I like', P.musicLikes.map(songCard).join('')) + '</section>';
     root.innerHTML = html; root.hidden = !html;
     root.classList.toggle('sk-lyrics-off', P.lyrics === false);
     bindPagers();
@@ -190,6 +185,8 @@
         var g = e.target.closest('[data-sk-go]');
         if (g) { var tr = g.closest('.sk-pager').querySelector('.sk-track'); tr.scrollBy({ left: Number(g.dataset.skGo) * tr.clientWidth, behavior: REDUCE.matches ? 'auto' : 'smooth' }); return; }
         var c = e.target.closest('[data-sk-ctl]'); if (c) { ctl(c.dataset.skCtl); return; }
+        var mo = e.target.closest('[data-sk-more]');
+        if (mo) { root.querySelectorAll('[data-sk-extra]').forEach(function (r) { r.hidden = false; }); mo.remove(); return; }
         var lb = e.target.closest('[data-sk-lib]');
         if (lb && window.MX) { var li = lib[Number(lb.dataset.skLib)]; if (li) MX.play(li, P); return; }
         var pl = e.target.closest('[data-sk-play]');

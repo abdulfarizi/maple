@@ -183,3 +183,7 @@
 .sk-row.on .sk-rt b{color:var(--sp-green)}
 .sk-rd{font:400 12.5px var(--mono,ui-monospace,monospace);color:var(--sp-mute);font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.sk-eq i{animation:none;transform:scaleY(.7)}}
+.sk-more{align-self:center;margin-top:10px;padding:8px 18px;border-radius:999px;border:1px solid #4d4d4d;background:transparent;color:#fff;font:600 13px var(--sans,system-ui);cursor:pointer;transition:border-color .15s,transform .15s}
+.sk-more:hover{border-color:#fff;transform:scale(1.03)}
+.sk-more:focus-visible{outline:2px solid #1db954;outline-offset:2px}
+.sk-row[hidden]{display:none}

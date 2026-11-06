@@ -22,10 +22,10 @@
   /* ───── music ───── */
   function musicUI() {
     var box = form.querySelector('[data-mxs-music]'); if (!box) return;
-    box.innerHTML = '<div class="mxs-add"><input type="text" inputmode="url" maxlength="200" data-mxs-url placeholder="Paste a Spotify or YouTube link" aria-label="Spotify or YouTube link to add">'
+    box.innerHTML = '<div class="mxs-add"><input type="text" inputmode="url" maxlength="200" data-mxs-url placeholder="Paste a Spotify or YouTube link (song, album or playlist)" aria-label="Spotify or YouTube link to add">'
       + '<button type="button" class="btn btn-sm btn-accent" data-mxs-addsong><i class="fa-solid fa-plus"></i> Add</button></div>'
       + '<div class="mxs-up"><label class="btn btn-sm"><i class="fa-solid fa-upload"></i> Upload a song<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.wav,.flac" data-mxs-file hidden></label>'
-      + '<small>MP3, M4A, OGG, WAV or FLAC, up to 18 MB. Uploaded songs play in full for every visitor. Only upload music you own or have permission to share.</small></div>'
+      + '<small>Albums and playlists are split into separate songs, one by one. MP3, M4A, OGG, WAV or FLAC, up to 18 MB. Uploaded songs play in full for every visitor. Only upload music you own or have permission to share.</small></div>'
       + '<div class="mxs-prog" data-mxs-prog hidden><i></i></div>'
       + '<p class="mxs-msg" data-mxs-mmsg role="status"></p><ol class="mxs-list" data-mxs-mlist></ol>'
       + '<p class="eyebrow mxs-pv-h">Preview</p><div class="mxs-pv" data-mxs-mpv></div>';
@@ -40,19 +40,69 @@
         + '<input data-k="note" maxlength="140" placeholder="Personal note (optional)" value="' + esc(x.note) + '" aria-label="Personal note">'
         + (x.audio ? '<div class="mxs-filebar"><span class="mxs-tag"><i class="fa-solid fa-file-audio"></i> Uploaded · full song</span>'
           + '<label class="btn btn-sm"><i class="fa-solid fa-image"></i> Cover<input type="file" accept="image/*" data-mxs-art hidden></label>'
-          + '<button type="button" class="btn btn-sm' + (st.song === x.audio ? ' btn-accent' : '') + '" data-mxs-pin aria-pressed="' + (st.song === x.audio) + '"><i class="fa-solid fa-star"></i> ' + (st.song === x.audio ? 'Card song' : 'Use as card song') + '</button></div>' : '')
+          + '<button type="button" class="btn btn-sm' + (st.song === x.audio ? ' btn-accent' : '') + '" data-mxs-pin aria-pressed="' + (st.song === x.audio) + '"><i class="fa-solid fa-star"></i> ' + (st.song === x.audio ? 'Card song' : 'Use as card song') + '</button></div>' : (isList(x.url) ? '<div class="mxs-filebar"><span class="mxs-tag"><i class="fa-solid fa-layer-group"></i> Whole album or playlist</span><button type="button" class="btn btn-sm btn-accent" data-mxs-split><i class="fa-solid fa-scissors"></i> Split into songs</button></div>' : ''))
         + '</div>' + moveBtns(i, st.music.length) + '</li>';
     }).join('');
     preview();
   }
+  /* albums and playlists become separate songs, one by one (server: /api/album-tracks) */
+  function isList(u) { var sp = window.MX && MX.spotify(u); return !!(sp && (sp.type === 'album' || sp.type === 'playlist')); }
+  function ytPlaylist(u) {
+    try { var x = new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u), h = x.hostname.replace(/^(www\.|m\.|music\.)/, '');
+      if ((h === 'youtube.com' || h === 'youtube-nocookie.com') && /^\/playlist/.test(x.pathname) && x.searchParams.get('list')) return 'https://www.youtube.com/playlist?list=' + encodeURIComponent(x.searchParams.get('list')); } catch (e) {}
+    return '';
+  }
+  function fetchTracks(link) {
+    return fetch('/api/album-tracks?url=' + encodeURIComponent(link)).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok || !d || !Array.isArray(d.tracks)) throw new Error((d && d.error) || 'Couldn’t read that album or playlist right now.');
+        if (!d.tracks.length) throw new Error('No playable songs were found in it.');
+        return d;
+      });
+    });
+  }
+  function toItems(tracks, room) {
+    var have = {}; st.music.forEach(function (x) { if (x.url) have[x.url] = 1; });
+    return tracks.filter(function (t) { return t.url && !have[t.url]; }).slice(0, Math.max(0, room)).map(function (t) { return { url: t.url, title: t.title || '', artist: t.artist || '', art: t.art || '', durationMs: t.durationMs || 0, note: '' }; });
+  }
+  function splitAt(i) {
+    var item = st.music[i], msg = form.querySelector('[data-mxs-mmsg]'); if (!item || !item.url) return;
+    msg.className = 'mxs-msg'; msg.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Splitting into songs…';
+    fetchTracks(item.url).then(function (d) {
+      var at = st.music.indexOf(item); if (at < 0) return;
+      var add = toItems(d.tracks, MAX_M - (st.music.length - 1));
+      if (!add.length) { msg.textContent = 'Those songs are already in your list or the list is full (' + MAX_M + ' max).'; msg.classList.add('bad'); return; }
+      Array.prototype.splice.apply(st.music, [at, 1].concat(add));
+      msg.textContent = 'Split into ' + add.length + ' songs. Publish to save.'; paintMusic(); dirty();
+    }).catch(function (e) { msg.textContent = e.message; msg.classList.add('bad'); });
+  }
   function addSong() {
-    var inp = form.querySelector('[data-mxs-url]'), msg = form.querySelector('[data-mxs-mmsg]'), sp = window.MX && MX.spotify(inp.value), yv = !sp && window.MX && MX.youtube && MX.youtube(inp.value);
+    var inp = form.querySelector('[data-mxs-url]'), msg = form.querySelector('[data-mxs-mmsg]'), sp = window.MX && MX.spotify(inp.value), yl = !sp && ytPlaylist(inp.value.trim()), yv = !sp && !yl && window.MX && MX.youtube && MX.youtube(inp.value);
     msg.className = 'mxs-msg';
-    if (!sp && !yv) { msg.textContent = 'That doesn’t look like a Spotify or YouTube link. Copy it from Share → Copy link.'; msg.classList.add('bad'); return; }
+    if (!sp && !yv && !yl) { msg.textContent = 'That doesn’t look like a Spotify or YouTube link. Copy it from Share → Copy link.'; msg.classList.add('bad'); return; }
     if (sp && !/^(track|album|playlist|episode)$/.test(sp.type)) { msg.textContent = 'Use a song, album or playlist link.'; msg.classList.add('bad'); return; }
+    if (st.music.length >= MAX_M) { msg.textContent = 'You can add up to ' + MAX_M + ' songs.'; msg.classList.add('bad'); return; }
+    if (yl || (sp && (sp.type === 'album' || sp.type === 'playlist'))) {
+      var src = yl || sp.url;
+      msg.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Getting the songs…';
+      fetchTracks(src).then(function (d) {
+        var add = toItems(d.tracks, MAX_M - st.music.length);
+        if (!add.length) { msg.textContent = 'Those songs are already in your list or the list is full (' + MAX_M + ' max).'; msg.classList.add('bad'); return; }
+        add.forEach(function (x) { st.music.push(x); }); inp.value = '';
+        msg.textContent = 'Added ' + add.length + ' songs' + (d.title ? ' from “' + d.title + '”' : '') + (add.length < d.tracks.length ? ' (the rest wouldn’t fit or were already added)' : '') + '. Publish to save.'; paintMusic(); dirty();
+      }).catch(function (e) {
+        if (sp) {   // server can't split (no Spotify keys yet): keep the whole album as one entry, with a Split button for later
+          var one = { url: sp.url, title: '', artist: '', art: '', note: '' };
+          if (st.music.some(function (x) { return x.url === one.url; })) { msg.textContent = 'That one is already in your list.'; msg.classList.add('bad'); return; }
+          st.music.push(one); inp.value = ''; paintMusic(); dirty();
+          MX.meta(one.url).then(function (m) { if (m && m.title) { one.title = m.title; one.artist = m.artist || ''; one.art = m.art || ''; paintMusic(); dirty(); } });
+          msg.textContent = e.message + ' It was added as one entry; use Split into songs once that’s set up.'; msg.classList.add('bad');
+        } else { msg.textContent = e.message; msg.classList.add('bad'); }
+      });
+      return;
+    }
     var link = (sp || yv).url, brand = sp ? 'Spotify' : 'YouTube';
     if (st.music.some(function (x) { return x.url === link; })) { msg.textContent = 'That one is already in your list.'; msg.classList.add('bad'); return; }
-    if (st.music.length >= MAX_M) { msg.textContent = 'You can add up to ' + MAX_M + ' songs.'; msg.classList.add('bad'); return; }
     var item = { url: link, title: '', artist: '', art: '', note: '' };
     st.music.push(item); inp.value = ''; paintMusic(); dirty();
     msg.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Getting the song details from ' + brand + '…';
@@ -243,14 +293,16 @@
   }
   function feat() {
     var box = form.querySelector('[data-mxs-feat]'), inp = form.elements.namedItem('spotify'); if (!box || !inp) return;
-    var v = inp.value.trim(), sp = MX.spotify(v);
-    if (!v) { box.innerHTML = ''; return; }
-    if (!sp) { box.innerHTML = '<p class="mxs-msg bad">Paste a full open.spotify.com link.</p>'; return; }
-    box.innerHTML = '<p class="mxs-msg"><i class="fa-solid fa-circle-notch fa-spin"></i> Checking with Spotify…</p>';
-    MX.meta(sp.url).then(function (m) {
+    var v = inp.value.trim(), sp = MX.spotify(v), yv = !sp && MX.youtube && MX.youtube(v);
+    var up = '<div class="mxs-up"><label class="btn btn-sm"><i class="fa-solid fa-upload"></i> Upload a song instead<input type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.wav,.flac" data-mxs-file hidden></label><small>Your first upload becomes the profile song. Change it later with “Use as card song” in Music I like.</small></div>';
+    if (!v) { box.innerHTML = up; return; }
+    if (sp) { box.innerHTML = '<p class="mxs-msg bad">Spotify links aren’t used for the profile player any more. Paste a YouTube link or upload a song.</p>' + up; return; }
+    if (!yv) { box.innerHTML = '<p class="mxs-msg bad">Paste a YouTube link (youtube.com, youtu.be or music.youtube.com).</p>' + up; return; }
+    box.innerHTML = '<p class="mxs-msg"><i class="fa-solid fa-circle-notch fa-spin"></i> Checking with YouTube…</p>' + up;
+    MX.meta(yv.url).then(function (m) {
       if (inp.value.trim() !== v) return;
-      box.innerHTML = '<div class="mxs-featcard">' + (m && m.art ? '<img src="' + esc(m.art) + '" alt="">' : '<i class="fa-brands fa-spotify"></i>')
-        + '<span><b>' + esc((m && m.title) || 'Spotify ' + sp.type) + '</b><small>' + esc((m && m.artist) || sp.type) + '</small></span></div>';
+      box.innerHTML = '<div class="mxs-featcard">' + (m && m.art ? '<img src="' + esc(m.art) + '" alt="">' : '<i class="fa-brands fa-youtube"></i>')
+        + '<span><b>' + esc((m && m.title) || 'YouTube video') + '</b><small>' + esc((m && m.artist) || 'YouTube') + '</small></span></div>' + up;
     });
   }
 
@@ -266,6 +318,7 @@
         st.anime.push(Object.assign({}, x)); pick.disabled = true; pick.querySelector('.mxs-plus').innerHTML = '<i class="fa-solid fa-check"></i>';
         msg.textContent = x.title + ' added. Set your status and rating below, then Publish.'; paintAnime(); dirty(); return;
       }
+      var spl = e.target.closest('[data-mxs-split]'); if (spl) { splitAt(Number(spl.closest('.mxs-row').dataset.i)); return; }
       var pinB = e.target.closest('[data-mxs-pin]');
       if (pinB) { var px = st.music[Number(pinB.closest('.mxs-row').dataset.i)]; if (px) { st.song = st.song === px.audio ? '' : px.audio; paintMusic(); dirty(); } return; }
       var row = e.target.closest('.mxs-row'); if (!row) return;
