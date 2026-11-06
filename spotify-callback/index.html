@@ -1,1 +1,30 @@
-
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Connecting Spotify · M-ID</title>
+<style>
+  html,body{margin:0;height:100%;background:#0b0b0f;color:#ededf0;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+  main{min-height:100%;display:grid;place-items:center;text-align:center;padding:24px;box-sizing:border-box}
+  b{display:block;font-size:18px;margin-bottom:6px}
+  p{margin:0;color:#a3a3ad}
+  a{color:#1ed760}
+</style>
+</head>
+<body>
+<main><div><b id="t">Connecting Spotify…</b><p id="m">One moment.</p></div></main>
+<script src="/assets/maple-spauth.js?v=1"></script>
+<script>
+  MSP.handle(function (ok, msg, back) {
+    document.getElementById('t').textContent = ok ? 'Spotify connected' : 'Couldn’t connect Spotify';
+    var m = document.getElementById('m'), to = back && back.charAt(0) === '/' ? back : '/';
+    m.innerHTML = '';
+    m.appendChild(document.createTextNode(ok ? 'Full songs now play for your Premium account. ' : (msg || '') + ' '));
+    var a = document.createElement('a'); a.href = to; a.textContent = 'Back to M-ID'; m.appendChild(a);
+    if (ok) setTimeout(function () { location.replace(to); }, 900);
+  });
+</script>
+</body>
+</html>
