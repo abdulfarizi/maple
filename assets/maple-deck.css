@@ -10,10 +10,10 @@
 body.pager-on .dk-deck{--top:var(--tb-h,64px)}
 /* v36-1 fix: the deck lives INSIDE its pager pane (absolute, not fixed). It used to be position:fixed, so it stayed on
  * screen on top of Home and Explore after you swiped/clicked away from the card or Profile pane. */
-.pg:has(.dk-deck),.pg-layer:has(.dk-deck){position:relative;overflow:hidden}
-.pg-layer:has(.dk-deck){position:fixed}
-.pg:has(.dk-deck)::before,.pg:has(.dk-deck)::after,.pg-layer:has(.dk-deck)::before,.pg-layer:has(.dk-deck)::after{display:none}
-.pg:has(.dk-deck)>.pg-main,.pg-layer:has(.dk-deck)>.pg-layer-main{min-height:0;position:static;z-index:auto;overflow:visible}
+.pg:has(.dk-deck:not(.dk-preview)),.pg-layer:has(.dk-deck:not(.dk-preview)){position:relative;overflow:hidden}
+.pg-layer:has(.dk-deck:not(.dk-preview)){position:fixed}
+.pg:has(.dk-deck:not(.dk-preview))::before,.pg:has(.dk-deck:not(.dk-preview))::after,.pg-layer:has(.dk-deck:not(.dk-preview))::before,.pg-layer:has(.dk-deck:not(.dk-preview))::after{display:none}
+.pg:has(.dk-deck:not(.dk-preview))>.pg-main,.pg-layer:has(.dk-deck:not(.dk-preview))>.pg-layer-main{min-height:0;position:static;z-index:auto;overflow:visible}
 .dk-preview{position:relative;inset:auto;height:600px;border-radius:22px;--top:0px;--bot:0px}
 
 /* background */
@@ -412,3 +412,90 @@ body.pager-on .dk-deck{--top:var(--tb-h,64px)}
 .dk-deck.dk-opening .dk-count,.dk-deck.dk-opening .dk-hint,.dk-deck.dk-opening .dk-dots,.dk-deck.dk-opening .dk-top{opacity:0}
 .dk-deck .dk-count,.dk-deck .dk-hint,.dk-deck .dk-dots,.dk-deck .dk-top{transition:opacity .6s ease .15s}
 @media (prefers-reduced-motion:reduce){.dk-starzoom{display:none}}
+
+
+/* ═══ v36-10 · Glass slides follow Light / Dark fully · transparent audio player · Studio scrolls again ═══
+ * Scroll fix: the pane rules at the top used  :has(.dk-deck)  which also matched the STUDIO pane (it holds the small
+ * .dk-preview deck), so the Studio got overflow:hidden and its spacers removed = it could not scroll. They now only
+ * match a pane that holds the real full-screen deck (:has(.dk-deck:not(.dk-preview))).
+ * Light mode: the deck used to be hard-coded dark (white text, black wash). Now every deck colour reads from the
+ * tokens below, and light mode swaps them (cream background, dark text, white glass). */
+.dk-deck{color-scheme:dark}
+:root[data-mode=light] .dk-deck{
+  color-scheme:light;
+  --text:#1b1620;--muted:rgba(27,22,32,.74);--dim:rgba(27,22,32,.52);
+  --glass-bg:rgba(255,255,255,.5);--tile:rgba(255,255,255,.55);--tile-line:rgba(27,22,32,.1);
+  --glass-line:color-mix(in srgb,var(--a) 42%,rgba(255,255,255,.92));
+  --glow:color-mix(in srgb,var(--a) 28%,transparent)}
+
+/* background layers */
+:root[data-mode=light] .dk-bg{background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--a) 16%,#fffaf6),#f5eee8 70%)}
+:root[data-mode=light] .dk-dim{background:rgba(255,250,246,calc(var(--dk-dim,.4) + .12))}
+:root[data-mode=light] .dk-vig{background:radial-gradient(130% 100% at 50% 45%,transparent 55%,rgba(255,250,246,.55))}
+:root[data-mode=light] .dk-blob{mix-blend-mode:normal;opacity:.34}
+:root[data-mode=light] .dk-blob.b3{opacity:.2}
+:root[data-mode=light] .dk-bigshape svg{opacity:.14}
+:root[data-mode=light] .dk-bigshape .veins{stroke:var(--text);stroke-opacity:.18}
+
+/* buttons, dots, counter, hint */
+:root[data-mode=light] .dk-fab{color:var(--text);background:rgba(255,255,255,.6);border-color:var(--glass-line);box-shadow:0 0 12px var(--glow),inset 0 0 8px rgba(255,255,255,.7)}
+:root[data-mode=light] .dk-fab:focus-visible,:root[data-mode=light] .dk-socials .tile:focus-visible,:root[data-mode=light] .dk-pager button:focus-visible,:root[data-mode=light] .dk-ctl button:focus-visible,:root[data-mode=light] .dk-stat .like:focus-visible{outline-color:var(--a)}
+:root[data-mode=light] .dk-dots button i{background:color-mix(in srgb,var(--text) 32%,transparent)}
+:root[data-mode=light] .dk-dots button:hover i{background:var(--text)}
+:root[data-mode=light] .dk-dots::after{background:color-mix(in srgb,var(--text) 14%,transparent)}
+:root[data-mode=light] .dk-pdots button{background:color-mix(in srgb,var(--text) 30%,transparent)}
+:root[data-mode=light] .dk-count{color:var(--text)}
+:root[data-mode=light] .dk-hint{color:color-mix(in srgb,var(--text) 70%,transparent)}
+:root[data-mode=light] .dk-hint i{border-color:color-mix(in srgb,var(--text) 65%,transparent)}
+.dk-pager>button{color:var(--text)}
+
+/* headings + text */
+:root[data-mode=light] .dk-head h2{background-image:linear-gradient(90deg,var(--text) 30%,color-mix(in srgb,var(--a) 80%,var(--text)))}
+:root[data-mode=light] .dk-who h1{background-image:linear-gradient(90deg,var(--text) 0%,var(--text) 40%,color-mix(in srgb,var(--a) 85%,var(--text)) 50%,var(--text) 60%,var(--text) 100%);filter:none}
+:root[data-mode=light] .dk-bio,:root[data-mode=light] .dk-pinfo b,:root[data-mode=light] .dk-ainfo b,:root[data-mode=light] .dk-mus b,:root[data-mode=light] .dk-arow em,
+:root[data-mode=light] .dk-socials .tile,:root[data-mode=light] .dk-reacts .reactions button,:root[data-mode=light] .dk-acts .btn,:root[data-mode=light] .dk-extras .btn,
+:root[data-mode=light] .dk-extras .owner-bar,:root[data-mode=light] .dk-badges>span,:root[data-mode=light] .dk-ctl button,:root[data-mode=light] .dk-list .tile .ico{color:var(--text)}
+:root[data-mode=light] .dk-arow em{border-color:color-mix(in srgb,var(--text) 45%,transparent)}
+:root[data-mode=light] .dk-badges>span{background:color-mix(in srgb,var(--text) 8%,transparent)}
+:root[data-mode=light] .dk-acts .btn:hover{background:rgba(255,255,255,.85)}
+:root[data-mode=light] .dk-extras .btn,:root[data-mode=light] .dk-extras .owner-bar{background:rgba(255,255,255,.55);border-color:color-mix(in srgb,var(--text) 18%,transparent)}
+:root[data-mode=light] .dk-dot{border-color:#f7f1ec}
+:root[data-mode=light] .dk-av .avatar-inner{border-color:#fff;background:#e9e2dc;color:var(--text)}
+:root[data-mode=light] .dk-sart,:root[data-mode=light] .dk-ph{background:#e9e2dc}
+:root[data-mode=light] .dk-ani,:root[data-mode=light] .dk-mus{background:rgba(255,255,255,.66)}
+:root[data-mode=light] .dk-ani:focus-visible,:root[data-mode=light] .dk-mus:focus-visible{box-shadow:0 0 0 2px var(--a)}
+:root[data-mode=light] .dk-list .tile,:root[data-mode=light] .dk-list .tile-copy,:root[data-mode=light] .dk-list li{background:rgba(255,255,255,.58)!important;border:1px solid color-mix(in srgb,var(--text) 10%,transparent)!important}
+:root[data-mode=light] .dk-list .tile:hover{background:rgba(255,255,255,.85)!important}
+:root[data-mode=light] .dk-list .tile .ico{background:color-mix(in srgb,var(--text) 7%,transparent)}
+:root[data-mode=light] .dk-ctl .dk-pp{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff}
+:root[data-mode=light] .dk-lfind{background:var(--text);color:#fff}
+:root[data-mode=light] .dk-eq i{background:var(--a)}
+
+/* glass cards */
+:root[data-mode=light] .dk-card{background:linear-gradient(160deg,rgba(255,255,255,.66),rgba(255,255,255,.36));
+  box-shadow:0 0 14px var(--glow),0 18px 40px -22px rgba(70,45,60,.35),inset 0 0 14px rgba(255,255,255,.55)}
+:root[data-mode=light] .dk-card::before{background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.7) 48%,transparent 60%);background-size:250% 100%;background-position:120% 0}
+:root[data-mode=light] [data-cstyle=outline] .dk-card{background:rgba(255,255,255,.12);box-shadow:none}
+:root[data-mode=light] [data-cstyle=solid] .dk-card{background:rgba(255,255,255,.94);border-color:color-mix(in srgb,var(--text) 10%,transparent);box-shadow:0 18px 40px -22px rgba(70,45,60,.4)}
+:root[data-mode=light] [data-cstyle=neon] .dk-card{background:rgba(255,255,255,.55);box-shadow:0 0 18px var(--a),inset 0 0 18px color-mix(in srgb,var(--a) 22%,transparent)}
+:root[data-mode=light] [data-cstyle=tinted] .dk-card{background:color-mix(in srgb,var(--a) 14%,rgba(255,255,255,.7));border-color:color-mix(in srgb,var(--a) 55%,#fff)}
+:root[data-mode=light] [data-glass=on] .dk-card{background:rgba(255,255,255,.4);border-color:rgba(255,255,255,.85);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 18px 40px -24px rgba(70,45,60,.35)}
+
+/* ── audio player card: much more see-through, in both modes (the background shows through; only a hairline edge) ── */
+:root .dk-deck .dk-card.dk-big{
+  background:color-mix(in srgb,var(--text) 2.5%,transparent)!important;
+  border-color:color-mix(in srgb,var(--text) 14%,transparent);
+  box-shadow:none!important;
+  -webkit-backdrop-filter:blur(3px)!important;backdrop-filter:blur(3px)!important}
+:root .dk-deck .dk-card.dk-big::before{display:none}
+
+/* ── lyrics: readable on any background, in both modes ── */
+.dk-lyr-in p{color:color-mix(in srgb,var(--text) 40%,transparent);opacity:1}
+.dk-lyr-in p.nxt{color:color-mix(in srgb,var(--text) 64%,transparent)}
+.dk-lyr-in p.cur{color:var(--text)}
+.dk-lyr-in .dk-lmsg{color:color-mix(in srgb,var(--text) 76%,transparent)}
+.dk-lyr-in .dk-lplain{color:color-mix(in srgb,var(--text) 86%,transparent)}
+:root[data-mode=light] .dk-lyr-in p{text-shadow:0 0 10px rgba(255,255,255,.9),0 0 2px rgba(255,255,255,.8)}
+:root[data-mode=light] .dk-lyr-in p.cur{color:color-mix(in srgb,var(--a) 22%,var(--text));text-shadow:0 0 14px rgba(255,255,255,.95),0 0 3px rgba(255,255,255,.9)}
+:root:not([data-mode=light]) .dk-lyr-in p{text-shadow:0 1px 8px rgba(0,0,0,.55)}
+:root[data-mode=light] .dk-bar{background:color-mix(in srgb,var(--text) 18%,transparent)}

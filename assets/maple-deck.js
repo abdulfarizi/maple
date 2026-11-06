@@ -83,7 +83,7 @@
     var cfg, paths = {}, parts = [], W = 1, H = 1, dpr = 1, raf = 0, flip = 0, boost = 0, alive = true, palette = [], theme = '', tries = 0, ro = null, mo = null;
     function readPalette() {
       var cs = getComputedStyle(deck), a = cs.getPropertyValue('--accent').trim() || '#e87fa0', b = cs.getPropertyValue('--accent-2').trim() || a, c = cs.getPropertyValue('--maple-red').trim() || a;
-      palette = [a, b, c, a, '#ffffff'];
+      palette = [a, b, c, a, document.documentElement.getAttribute('data-mode') === 'light' ? '#6b5b73' : '#ffffff'];
     }
     function spawn(q, init) {
       var s = cfg.s; q.z = Math.random(); q.s = s[0] + q.z * (s[1] - s[0]); q.x = Math.random() * W;
@@ -160,6 +160,13 @@
       else if (cfg) { readPalette(); parts.forEach(function (q) { q.c = palette[(Math.random() * palette.length) | 0]; }); if (still) paint(); }
     });
     if (mo) mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
+    /* light / dark switch: recolour the floating shapes (the white ones would vanish on the light background) */
+    var onMode = function () {
+      if (!alive) return; if (!document.body.contains(cv) && !preview) return;
+      if (cfg) { readPalette(); parts.forEach(function (q) { q.c = palette[(Math.random() * palette.length) | 0]; }); if (still) paint(); }
+    };
+    window.addEventListener('maple:mode', onMode);
+    var _stop = api.stop; api.stop = function () { window.removeEventListener('maple:mode', onMode); _stop(); };
     requestAnimationFrame(build);
     return api;
   }
