@@ -158,3 +158,18 @@ body.pager-on [data-sec]{scroll-margin-top:70px}
 .mxs-tag{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;margin-right:auto}
 .mxs-tag i{color:#4ade80}
 .mx-sp.mx-up{background:rgba(0,0,0,.55);color:#fff}
+
+/* v36-6 · Studio: choose lyrics for the featured track */
+.mxs-lyr{margin:10px 0 12px;padding:12px;border:1px solid var(--line);border-radius:14px}
+.mxs-lyr-h{display:block;margin-bottom:6px;font-size:13.5px}.mxs-lyr-h i{margin-right:6px;opacity:.8}
+.mxs-lyr-q{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.mxs-lyr-q input{flex:1 1 140px;min-width:0}
+.mxs-lyr-res{display:flex;flex-direction:column;gap:2px;max-height:280px;overflow:auto}
+.mxs-lyr-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;text-align:left;font:inherit;color:inherit;background:transparent;border:0;border-radius:10px;padding:9px 10px;cursor:pointer}
+.mxs-lyr-row:hover,.mxs-lyr-row:focus-visible{background:rgba(127,127,127,.16)}
+.mxs-lyr-row b{font-size:13.5px}.mxs-lyr-row span{font-size:12px;color:var(--muted)}
+.mxs-lyr-row em{font-style:normal;font-size:10.5px;font-weight:700;color:#22c55e;margin-left:auto}
+.mxs-lyr-own{margin-top:10px;font-size:13px}.mxs-lyr-own summary{cursor:pointer;color:var(--muted)}
+.mxs-lyr-own textarea{display:block;width:100%;margin:8px 0;min-height:120px;font:inherit;resize:vertical;box-sizing:border-box}
+.mxs-lyr-own small{display:block;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.mxs-lyr .mxs-featcard .btn{margin-left:auto}

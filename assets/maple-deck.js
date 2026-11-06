@@ -55,7 +55,7 @@
     var art = x.art && artOk(x.art) ? '<img src="' + esc(x.art) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '';
     var sub = x.artist || (x.audio ? 'Uploaded' : /youtube\.com/.test(x.url || '') ? 'YouTube' : /\/album\//.test(x.url) ? 'Album' : /\/playlist\//.test(x.url) ? 'Playlist' : 'Spotify');
     return '<button type="button" class="dk-mus" data-dk-play="' + i + '" aria-label="Play ' + esc(x.title || 'song') + '">'
-      + '<span class="dk-cover"><span class="dk-ph">' + first(x.title) + '</span>' + art + '<span class="dk-hover"><i class="fa-solid fa-play"></i></span></span>'
+      + '<span class="dk-cover"' + (art || !x.url || x.audio ? '' : ' data-fill-url="' + esc(x.url) + '"') + '><span class="dk-ph">' + first(x.title) + '</span>' + art + '<span class="dk-hover"><i class="fa-solid fa-play"></i></span></span>'
       + '<b>' + esc(x.title || 'Untitled') + '</b><small>' + esc(sub) + '</small></button>';
   }
   /* compact player: cover · title/artist · ⏮ ⏯ ⏭ · time ─●─ time */
@@ -351,6 +351,7 @@
       if (wantLyr) { lyrVer = -2; paintSong(); }
     }
     go(0, true);
+    if (window.MX && MX.fill) MX.fill(deck);
 
     slides.forEach(function (s) {
       s.addEventListener('scroll', function () { if (s !== slides[cur]) return; var m = s.scrollHeight - s.clientHeight; deck.style.setProperty('--dk-sp', m > 4 ? (s.scrollTop / m).toFixed(3) : '0'); }, { passive: true });
@@ -452,6 +453,7 @@
       var pg = e.target.closest('[data-dk-pg]'), pt = e.target.closest('[data-dk-pgto]');
       if (pg || pt) { var car = (pg || pt).closest('[data-dk-car]'); if (car && car.__go) car.__go(pt ? Number(pt.dataset.dkPgto) : car.__idx() + Number(pg.dataset.dkPg)); return; }
       if (preview) return;
+      if (e.target.closest('[data-dk-lsearch]')) { if (window.MaplePlayer && MaplePlayer.searchLyrics) MaplePlayer.searchLyrics(); return; }
       var pl = e.target.closest('[data-dk-play]');
       if (pl) { var item = (p.musicLikes || [])[Number(pl.dataset.dkPlay)]; if (item && window.MX) MX.play(item, p); return; }
       var sc = e.target.closest('[data-dk-song]');
@@ -478,7 +480,10 @@
         lyrVer = v; lyrCur = -1;
         if (L && L.ok && L.lines) box.innerHTML = L.lines.map(function (l) { return '<p>' + (esc(l.x) || '♪') + '</p>'; }).join('');
         else if (L && L.ok && L.plain) box.innerHTML = '<p class="dk-lplain">' + esc(L.plain) + '</p>';
-        else box.innerHTML = '<p class="dk-lmsg">' + esc((L && L.ok && L.msg) || song.note || (p.lyrics !== false ? (on ? '♪' : 'Press play to see the lyrics') : '♪')) + '</p>';
+        else {
+          var msg = p.lyrics === false ? (song.note || '♪') : ((L && L.ok && L.msg) || (on ? 'Finding lyrics…' : 'Press play to see the lyrics'));
+          box.innerHTML = '<p class="dk-lmsg">' + esc(msg) + '</p>' + (p.lyrics !== false && on && L && L.ok ? '<p class="dk-lmsg"><button type="button" class="dk-lfind" data-dk-lsearch><i class="fa-solid fa-magnifying-glass"></i> Search lyrics manually</button></p>' : '');
+        }
         box.style.transform = '';
       }
       if (L && L.ok && L.lines) {

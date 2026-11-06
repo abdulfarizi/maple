@@ -187,3 +187,7 @@
 .sk-more:hover{border-color:#fff;transform:scale(1.03)}
 .sk-more:focus-visible{outline:2px solid #1db954;outline-offset:2px}
 .sk-row[hidden]{display:none}
+
+/* v36-6 · manual lyric search button */
+.sk-lstate>span{text-align:center;line-height:1.5}
+.sk-lfind{margin-top:10px;font:inherit;font-size:12.5px;font-weight:700;color:#111;background:#fff;border:0;border-radius:999px;padding:8px 14px;cursor:pointer}

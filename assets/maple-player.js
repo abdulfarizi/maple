@@ -582,7 +582,16 @@
       return fetch('/api/lyrics?p=' + encodeURIComponent(path)).then(lrcRead);
     });
   }
-  function hasLyrics(d) { return !!(d && (d.syncedLyrics || d.plainLyrics || d.instrumental)); }
+  /* LRCLIB is a community database and holds test/spam entries (a single word like "probe"): only accept real-looking lyrics
+     that fit the song's length */
+  function hasLyrics(d) {
+    if (!d) return false;
+    if (d.instrumental) return true;
+    var txt = String(d.syncedLyrics || d.plainLyrics || '').replace(/\[[^\]]*\]/g, ''), words = (txt.match(/\S+/g) || []).length;
+    if (words < 25) return false;
+    if (S.dur && d.duration && Math.abs(d.duration * 1000 - S.dur) > 20000) return false;
+    return true;
+  }
   function pickBest(list) {
     list = (Array.isArray(list) ? list : []).filter(hasLyrics); if (!list.length) return null;
     list.sort(function (a, b) {
@@ -611,7 +620,7 @@
     if (!d) return lyricState(NOLYR);
     if (d.instrumental) return lyricState('<i class="fa-solid fa-guitar"></i><b>Instrumental</b><span>Just the music on this one.</span>');
     lyr.lines = parseLrc(d.syncedLyrics); lyr.plain = d.plainLyrics || '';
-    el.sheet.querySelector('.mpx-lsrc').innerHTML = (lyr.lines ? 'Synced · ' : '') + 'via <a href="https://lrclib.net" target="_blank" rel="noopener noreferrer">LRCLIB</a>';
+    el.sheet.querySelector('.mpx-lsrc').innerHTML = d.custom ? 'Added by the owner' : (lyr.lines ? 'Synced · ' : '') + 'via <a href="https://lrclib.net" target="_blank" rel="noopener noreferrer">LRCLIB</a>';
     if (lyr.lines) el.lbody.innerHTML = '<ol class="mpx-lines">' + lyr.lines.map(function (l, i) { return '<li data-i="' + i + '">' + (esc(l.x) || '♪') + '</li>'; }).join('') + '</ol>';
     else if (lyr.plain) el.lbody.innerHTML = '<div class="mpx-plain">' + esc(lyr.plain).replace(/\n/g, '<br>') + '</div><p class="mpx-lhint">These lyrics aren’t time-synced, so they don’t follow along.</p>';
     else return lyricState(NOLYR);
@@ -642,6 +651,14 @@
     lyr.key = key; lyr.manual = { url: t.url, d: d };
     showLyrics(d); lyricForm(false);
   }
+  /* lyrics the profile owner picked in Studio (saved on the profile as lyricsFix) win over the automatic lookup */
+  function fixFor(t) {
+    var p = profileNow(), f = p && p.lyricsFix;
+    if (!f || !t || (p.slug && t.slug && p.slug !== t.slug)) return null;
+    if (f.url !== t.url && f.url !== t.audio) return null;
+    if (!(f.syncedLyrics || f.plainLyrics || f.instrumental)) return null;
+    return f;
+  }
   function loadLyrics() {
     var t = S.track; if (!(S.open || inlineNow() || S.deckLyr) || !lyrOk(t)) return;
     if (!t.title) { lyricState('<i class="fa-solid fa-circle-notch fa-spin"></i> Looking up the song…<button type="button" class="mpx-lfind big" data-mpx="lsearch"><i class="fa-solid fa-magnifying-glass"></i> Search lyrics manually</button>'); return; }
@@ -649,7 +666,7 @@
     lyr.key = key; lyr.lines = null; lyr.plain = ''; lyr.cur = -1;
     lyricState('<i class="fa-solid fa-circle-notch fa-spin"></i> Finding lyrics…');
     el.sheet.querySelector('.mpx-lsrc').innerHTML = '';
-    (lyr.manual && lyr.manual.url === t.url ? Promise.resolve(lyr.manual.d) : findLyrics(t)).then(function (d) {
+    (lyr.manual && lyr.manual.url === t.url ? Promise.resolve(lyr.manual.d) : fixFor(t) ? Promise.resolve(fixFor(t)) : findLyrics(t)).then(function (d) {
       if (lyr.key !== key) return;
       showLyrics(d);
     }).catch(function () {
@@ -683,6 +700,7 @@
       else if (a === 'back' || a === 'fwd') skip(a === 'fwd' ? 10 : -10);
       else if (a === 'seek' && S.dur) seekMs(S.dur * Math.min(1, Math.max(0, Number(d.v) || 0)));
       else if (a === 'seekms') seekMs(Math.max(0, Number(d.v) || 0));
+      else if (a === 'lsearch') { if (S.track) { setOpen(true); lyricForm(true); } }
       else if (a === 'login') connect();
     }
     else if (d.maple === 'lofi-state') {
@@ -695,5 +713,6 @@
 
   window.MaplePlayer = { setProfile: setProfile, play: play, ctl: function (a) { if (a === 'toggle') toggle(); else if (a === 'back' || a === 'fwd') skip(a === 'fwd' ? 10 : -10); }, open: function () { setOpen(true); }, close: function () { setOpen(false); }, state: function () { return S; },
     /* the Sections layout's Audio Player slide reads the lyrics too */
+    searchLyrics: function () { if (!S.track) return; setOpen(true); lyricForm(true); },
     lyrics: function (want) { if (want !== undefined) { S.deckLyr = !!want; if (want && S.track) loadLyrics(); } return { lines: lyr.lines, plain: lyr.plain, msg: lyr.msg, ver: lyr.ver, ok: lyrOk(S.track) }; } };
 })();

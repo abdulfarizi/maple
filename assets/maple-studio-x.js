@@ -14,6 +14,7 @@
     var pin = st.song && st.music.filter(function (x) { return x.audio === st.song; })[0];
     return { musicLikes: st.music.map(function (x) { return x.audio ? { audio: x.audio, title: x.title, artist: x.artist, art: x.art, durationMs: x.durationMs || 0, note: x.note }
         : { url: x.url, title: x.title, artist: x.artist, art: x.art, note: x.note }; }),
+      lyricsFix: st.lyricsFix || null,
       song: pin ? { audio: pin.audio, title: pin.title, artist: pin.artist, art: pin.art, durationMs: pin.durationMs || 0 } : null,
       anime: st.anime.map(function (x) { return Object.assign({}, x); }), themes: st.themes.slice(),
       musicTitle: val('musicTitle'), musicSub: val('musicSub'), animeTitle: val('animeTitle'), animeSub: val('animeSub') };
@@ -306,10 +307,85 @@
     });
   }
 
+  /* ───── lyrics for the featured track: search LRCLIB (or paste your own) and pick the right ones ───── */
+  function lyrTarget() { var v = val('spotify'), yv = v && !MX.spotify(v) && MX.youtube && MX.youtube(v); return st.song || (yv ? yv.url : ''); }
+  function lrc(path) {
+    var rd = function (r) { if (r.status === 404) return null; if (!r.ok) throw new Error('lrclib'); return r.json(); };
+    return fetch('https://lrclib.net/api/' + path).then(rd).catch(function () { return fetch('/api/lyrics?p=' + encodeURIComponent(path)).then(rd); });
+  }
+  function lyrStatus() {
+    var n = form && form.querySelector('[data-lyr-now]'); if (!n) return;
+    var f = st.lyricsFix, tg = lyrTarget(), on = form.elements.namedItem('lyrics');
+    var off = on && !on.checked ? '<p class="mxs-msg bad">Lyrics are switched off above, so nothing will show until you turn them on.</p>' : '';
+    if (!tg) { n.innerHTML = off + '<p class="mxs-msg">Add a YouTube link or upload a song first, then choose its lyrics here.</p>'; return; }
+    if (!f) { n.innerHTML = off + '<p class="mxs-msg"><i class="fa-solid fa-wand-magic-sparkles"></i> Automatic: lyrics are looked up from the song title. If they’re wrong or missing, search below.</p>'; return; }
+    var same = f.url === tg;
+    n.innerHTML = off + '<div class="mxs-featcard"><i class="fa-solid fa-align-center"></i><span><b>' + esc(f.custom ? 'Lyrics you pasted' : (f.trackName || 'Chosen lyrics')) + '</b><small>' + esc(f.custom ? 'Shown for visitors' : (f.artistName || '') + (f.syncedLyrics ? ' · time-synced' : ' · plain text')) + '</small></span>'
+      + '<button type="button" class="btn btn-sm" data-lyr-clear>Remove</button></div>'
+      + (same ? '' : '<p class="mxs-msg bad">These lyrics were chosen for a different featured track, so they won’t show for the current one. Remove or choose again.</p>');
+  }
+  function lyrUI() {
+    var host = form.querySelector('[data-mxs-feat]'); if (!host || form.querySelector('[data-mxs-lyr]')) { lyrStatus(); return; }
+    var box = document.createElement('div'); box.className = 'mxs-lyr'; box.setAttribute('data-mxs-lyr', '');
+    box.innerHTML = '<label class="mxs-lyr-h"><b><i class="fa-solid fa-align-center"></i> Lyrics for the featured track</b></label><div data-lyr-now></div>'
+      + '<div class="mxs-lyr-q"><input type="text" data-lq-title maxlength="120" placeholder="Song title" aria-label="Song title"><input type="text" data-lq-artist maxlength="120" placeholder="Artist (optional)" aria-label="Artist">'
+      + '<button type="button" class="btn btn-sm btn-accent" data-lyr-go><i class="fa-solid fa-magnifying-glass"></i> Search lyrics</button></div>'
+      + '<div class="mxs-lyr-res" data-lyr-res></div>'
+      + '<details class="mxs-lyr-own"><summary>Or paste the lyrics yourself</summary><textarea data-lyr-text rows="6" maxlength="8000" placeholder="Paste the lyrics here"></textarea>'
+      + '<button type="button" class="btn btn-sm" data-lyr-use>Use these lyrics</button><small>Only paste lyrics you have the right to share. Pasted lyrics are plain text and don’t scroll along with the song.</small></details>';
+    host.parentNode.insertBefore(box, host.nextSibling);
+    lyrStatus();
+    var tg = lyrTarget();      // pre-fill the search from the song's name
+    if (tg && MX.meta) MX.meta(tg).then(function (m) {
+      if (!m || !m.title) return; var ti = box.querySelector('[data-lq-title]'), ar = box.querySelector('[data-lq-artist]');
+      if (ti && !ti.value) ti.value = m.title; if (ar && !ar.value) ar.value = m.artist || '';
+    });
+  }
+  function lyrSearch() {
+    var ti = form.querySelector('[data-lq-title]').value.trim(), ar = form.querySelector('[data-lq-artist]').value.trim(), res = form.querySelector('[data-lyr-res]');
+    if (!ti && !ar) { res.innerHTML = '<p class="mxs-msg bad">Type the song title first.</p>'; return; }
+    res.innerHTML = '<p class="mxs-msg"><i class="fa-solid fa-circle-notch fa-spin"></i> Searching…</p>';
+    var q = (ar + ' ' + ti).trim();
+    var first = ti ? 'search?track_name=' + encodeURIComponent(ti) + (ar ? '&artist_name=' + encodeURIComponent(ar) : '') : 'search?q=' + encodeURIComponent(q);
+    lrc(first).then(function (l) { return Array.isArray(l) && l.length ? l : lrc('search?q=' + encodeURIComponent(q)); }).then(function (list) {
+      list = (Array.isArray(list) ? list : []).filter(function (d) { var t = String(d.syncedLyrics || d.plainLyrics || ''); return d.instrumental || (t.match(/\S+/g) || []).length >= 12; }).slice(0, 10);
+      st.lyrResults = list;
+      if (!list.length) { res.innerHTML = '<p class="mxs-msg">Nothing found. Try only the song title, or paste the lyrics yourself below.</p>'; return; }
+      res.innerHTML = list.map(function (d, i) {
+        var m = Math.round((d.duration || 0)), mm = m ? ' · ' + Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0') : '';
+        return '<button type="button" class="mxs-lyr-row" data-lyr-pick="' + i + '"><b>' + esc(d.trackName || d.name || 'Untitled') + '</b><span>' + esc(d.artistName || '') + (d.albumName ? ' · ' + esc(d.albumName) : '') + esc(mm) + '</span>' + (d.syncedLyrics ? '<em>Synced</em>' : '') + '</button>';
+      }).join('');
+    }).catch(function () { res.innerHTML = '<p class="mxs-msg bad">Couldn’t reach the lyrics service. Try again in a moment.</p>'; });
+  }
+  function lyrClick(e) {
+    var t = e.target;
+    if (t.closest('[data-lyr-go]')) { lyrSearch(); return true; }
+    var pk = t.closest('[data-lyr-pick]');
+    if (pk) {
+      var d = st.lyrResults && st.lyrResults[Number(pk.dataset.lyrPick)], tg = lyrTarget(); if (!d) return true;
+      if (!tg) { form.querySelector('[data-lyr-res]').innerHTML = '<p class="mxs-msg bad">Add a YouTube link or upload a song first.</p>'; return true; }
+      st.lyricsFix = { url: tg, id: d.id || 0, trackName: String(d.trackName || '').slice(0, 120), artistName: String(d.artistName || '').slice(0, 120), duration: d.duration || 0,
+        syncedLyrics: String(d.syncedLyrics || '').slice(0, 20000), plainLyrics: String(d.plainLyrics || '').slice(0, 20000), instrumental: !!d.instrumental };
+      form.querySelector('[data-lyr-res]').innerHTML = '<p class="mxs-msg"><i class="fa-solid fa-circle-check"></i> Chosen. Press Publish to save it.</p>';
+      lyrStatus(); dirty(); return true;
+    }
+    if (t.closest('[data-lyr-use]')) {
+      var tx = form.querySelector('[data-lyr-text]').value.replace(/\r/g, '').trim(), tg2 = lyrTarget();
+      if (!tg2) { form.querySelector('[data-lyr-res]').innerHTML = '<p class="mxs-msg bad">Add a YouTube link or upload a song first.</p>'; return true; }
+      if (tx.length < 20) { form.querySelector('[data-lyr-res]').innerHTML = '<p class="mxs-msg bad">Paste the lyrics first.</p>'; return true; }
+      st.lyricsFix = { url: tg2, custom: true, trackName: '', artistName: '', plainLyrics: tx.slice(0, 8000), syncedLyrics: '' };
+      form.querySelector('[data-lyr-res]').innerHTML = '<p class="mxs-msg"><i class="fa-solid fa-circle-check"></i> Added. Press Publish to save it.</p>';
+      lyrStatus(); dirty(); return true;
+    }
+    if (t.closest('[data-lyr-clear]')) { st.lyricsFix = null; lyrStatus(); dirty(); return true; }
+    return false;
+  }
+
   function bind() {
     form.addEventListener('click', function (e) {
       var j = e.target.closest('.linkish[data-tab]'); if (j && form.__tab) { form.__tab(j.dataset.tab); return; }
       if (e.target.closest('[data-mxs-addsong]')) { addSong(); return; }
+      if (lyrClick(e)) return;
       var pick = e.target.closest('[data-mxs-pick]');
       if (pick) {
         var x = st.results && st.results[Number(pick.dataset.mxsPick)]; if (!x) return;
@@ -337,7 +413,8 @@
       } else if (t.matches && t.matches('[data-mxs-theme]')) {
         st.themes = Array.prototype.map.call(form.querySelectorAll('[data-mxs-theme]:checked'), function (c) { return c.dataset.mxsTheme; });
       } else if (t.matches && t.matches('[data-mxs-q]')) { clearTimeout(searchT); var q = t.value; searchT = setTimeout(function () { search(q); }, 450); }
-      else if (t.name === 'spotify') { clearTimeout(feat.t); feat.t = setTimeout(feat, 400); }
+      else if (t.name === 'lyrics') lyrStatus();
+      else if (t.name === 'spotify') { clearTimeout(feat.t); feat.t = setTimeout(feat, 400); clearTimeout(lyrStatus.t); lyrStatus.t = setTimeout(lyrStatus, 500); }
     };
     form.addEventListener('input', upd, true);           // capture: our state updates before the Studio reads it
     form.addEventListener('change', upd, true);
@@ -349,6 +426,7 @@
     form.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter') return;
       if (e.target.matches('[data-mxs-url]')) { e.preventDefault(); addSong(); }
+      else if (e.target.closest('[data-mxs-lyr]')) { e.preventDefault(); if (e.target.matches('[data-lq-title],[data-lq-artist]')) lyrSearch(); }
       else if (e.target.closest('[data-mxs-music],[data-mxs-anime]')) e.preventDefault();      // never publish by accident
     });
   }
@@ -357,9 +435,9 @@
     form = f; window.__mx = null;
     var cur = window.__dgGet ? window.__dgGet() : {};
     st = { music: (cur.musicLikes || []).map(function (x) { return Object.assign({ title: '', artist: '', art: '', note: '' }, x); }),
-      anime: (cur.anime || []).map(function (x) { return Object.assign({}, x); }), song: (cur.song && cur.song.audio) || '', themes: Array.isArray(cur.themes) ? cur.themes.slice() : [], results: [] };
+      anime: (cur.anime || []).map(function (x) { return Object.assign({}, x); }), song: (cur.song && cur.song.audio) || '', lyricsFix: cur.lyricsFix && cur.lyricsFix.url ? cur.lyricsFix : null, themes: Array.isArray(cur.themes) ? cur.themes.slice() : [], results: [] };
     window.__mx = snapshot;
-    musicUI(); animeUI(); themesUI(); bind(); feat();
+    musicUI(); animeUI(); themesUI(); bind(); feat(); lyrUI();
   }
   function check() {
     var f = document.getElementById('editor');

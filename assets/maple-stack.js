@@ -69,7 +69,7 @@
       var art = x.art && artOk(x.art) ? '<img src="' + esc(x.art) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '';
       return '<li class="sk-row"' + (i >= 8 ? ' hidden data-sk-extra' : '') + ' data-sk-key="' + esc((x.title || '').toLowerCase()) + '"><button type="button" data-sk-lib="' + i + '" aria-label="Play ' + esc(x.title || 'song') + '">'
         + '<span class="sk-rn"><b>' + (i + 1) + '</b><span class="sk-rp" aria-hidden="true">' + I.play + '</span><span class="sk-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>'
-        + '<span class="sk-rart"><span class="sk-ph">' + esc((x.title || '♪')[0]) + '</span>' + art + '</span>'
+        + '<span class="sk-rart"' + (art || !x.url || x.audio ? '' : ' data-fill-url="' + esc(x.url) + '"') + '><span class="sk-ph">' + esc((x.title || '♪')[0]) + '</span>' + art + '</span>'
         + '<span class="sk-rt"><b>' + esc(x.title || 'Untitled') + '</b><small>' + esc(x.artist || 'Full song') + '</small></span>'
         + '<span class="sk-rd">' + (x.durationMs ? fmt(x.durationMs) : '') + '</span></button></li>';
     }).join('');
@@ -143,7 +143,7 @@
     var boxes = root.querySelectorAll('.sk-lyr');
     var html = st.lines ? '<ol class="sk-lines">' + st.lines.map(function (l, i) { return '<li data-i="' + i + '">' + (esc(l.x) || '♪') + '</li>'; }).join('') + '</ol>'
       : st.plain ? '<div class="sk-plain">' + esc(st.plain).replace(/\n/g, '<br>') + '</div>'
-      : '<div class="sk-lstate">' + esc(st.msg || 'Tap play to start the music.') + '</div>';
+      : '<div class="sk-lstate"><span>' + esc(st.msg || 'Tap play to start the music.') + (/^(No lyrics|Looking up)/.test(st.msg || '') ? '<br><button type="button" class="sk-lfind" data-sk-ctl="lsearch">Search lyrics manually</button>' : '') + '</span></div>';
     boxes.forEach(function (b) { b.innerHTML = html; });
     var m = root.querySelector('.sk-mlyr'); if (m) m.innerHTML = st.lines ? '<ol class="sk-lines">' + st.lines.map(function (l) { return '<li>' + (esc(l.x) || '♪') + '</li>'; }).join('') + '</ol>' : '';
   }
@@ -179,6 +179,7 @@
     root.classList.toggle('sk-lyrics-off', P.lyrics === false);
     bindPagers();
     paintLyrics();
+    if (window.MX && MX.fill) MX.fill(root);
     if (!root.__bound) {
       root.__bound = 1;
       root.addEventListener('click', function (e) {

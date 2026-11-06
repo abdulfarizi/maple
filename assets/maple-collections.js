@@ -203,7 +203,18 @@
     if (item.url) window.open(item.url, '_blank', 'noopener');
   }
 
-  window.MX = { esc: esc, spotify: spotify, youtube: youtube, meta: meta, anilist: anilist, musicHTML: musicHTML, animeHTML: animeHTML, mount: mount, play: play,
+  /* cards/rows with no saved cover: look the song up (YouTube → iTunes/Deezer cover) and fill it in */
+  function fill(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll('[data-fill-url]').forEach(function (n) {
+      var u = n.getAttribute('data-fill-url'); n.removeAttribute('data-fill-url');
+      meta(u).then(function (m) {
+        if (!m || !m.art || !ART_OK.test(m.art) || n.querySelector('img')) return;
+        var im = document.createElement('img'); im.alt = ''; im.decoding = 'async'; im.onerror = function () { im.remove(); }; im.src = m.art; n.appendChild(im);
+      });
+    });
+  }
+  window.MX = { fill: fill, esc: esc, spotify: spotify, youtube: youtube, meta: meta, anilist: anilist, musicHTML: musicHTML, animeHTML: animeHTML, mount: mount, play: play,
     STATUS: STATUS, artOk: function (u) { return ART_OK.test(u || ''); },
     musicOn: function (p) { return !!p && p.musicOn !== false && Array.isArray(p.musicLikes) && p.musicLikes.length > 0; },
     animeOn: function (p) { return !!p && p.animeOn !== false && Array.isArray(p.anime) && p.anime.length > 0; } };
