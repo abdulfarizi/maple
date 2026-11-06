@@ -164,6 +164,38 @@
     return api;
   }
 
+  /* ── v36-9 · opening: the hollow-star zoom (same look as the card intro), plays by itself, nothing to press ── */
+  function starZoom(host, accent, done) {
+    var W = host.clientWidth || window.innerWidth, H = host.clientHeight || window.innerHeight, cx = W / 2, cy = H / 2;
+    var bg = (getComputedStyle(document.documentElement).getPropertyValue('--bg') || '').trim() || '#0f0d0e';
+    var NS = 'http://www.w3.org/2000/svg', ov = document.createElement('div');
+    ov.className = 'dk-starzoom'; ov.setAttribute('aria-hidden', 'true');
+    ov.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="display:block">'
+      + '<defs><mask id="dk-sz-mask"><rect width="' + W + '" height="' + H + '" fill="#fff"/><path id="dk-sz-hole" fill="#000"/></mask></defs>'
+      + '<rect width="' + W + '" height="' + H + '" fill="' + bg + '" mask="url(#dk-sz-mask)"/><path id="dk-sz-ring" fill="none" stroke-linejoin="round"/></svg>';
+    host.appendChild(ov);
+    var hole = ov.querySelector('#dk-sz-hole'), ring = ov.querySelector('#dk-sz-ring');
+    ring.style.stroke = accent; ring.style.filter = 'drop-shadow(0 0 10px ' + accent + ')';
+    var base = Math.max(46, Math.min(74, Math.min(W, H) * 0.15)), Rmax = Math.hypot(W, H) / 2 / 0.3 * 1.12;
+    var APPEAR = 450, HOLD = 250, ZOOM = 1050, t0 = performance.now(), fin = false;
+    function star(R, rot) { var d = ''; for (var i = 0; i < 10; i++) { var r = i % 2 ? R * 0.382 : R, a = -Math.PI / 2 + rot + i * Math.PI / 5; d += (i ? 'L' : 'M') + (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1); } return d + 'Z'; }
+    var backOut = function (u) { var c = 1.70158; return 1 + (c + 1) * Math.pow(u - 1, 3) + c * Math.pow(u - 1, 2); };
+    var inOut = function (u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; };
+    function end() { if (fin) return; fin = true; ov.remove(); if (done) done(); }
+    (function frame(now) {
+      if (fin) return;
+      if (!document.body.contains(ov)) { fin = true; if (done) done(); return; }
+      var t = now - t0, R, rot = 0, ringA = 1, zt = APPEAR + HOLD;
+      if (t < APPEAR) { var u0 = t / APPEAR; R = base * backOut(u0); ringA = Math.min(1, u0 * 1.6); }
+      else if (t < zt) R = base * (1 + 0.045 * Math.sin((t - APPEAR) / 170));
+      else { var u = Math.min(1, (t - zt) / ZOOM), e = inOut(u); R = base * Math.pow(Rmax / base, e); rot = e * Math.PI * 0.8; ringA = 1 - Math.max(0, (u - 0.5) / 0.5); if (u >= 1) return end(); }
+      var d = star(R, rot); hole.setAttribute('d', d); ring.setAttribute('d', d);
+      ring.setAttribute('stroke-width', (2 + R * 0.012).toFixed(2)); ring.style.opacity = ringA;
+      requestAnimationFrame(frame);
+    })(t0);
+    return end;
+  }
+
   window.dgDeck = function (root, p, opt) {
     opt = opt || {};
     var page = root && root.querySelector('.card-page'); if (!page || !p) return;
@@ -231,8 +263,7 @@
     if (shopUl || donate) html += slide('shop', '<div class="dk-card dk-list dk-item" style="--i:1"><div data-dk-slot="shopnote"></div><div data-dk-slot="shop"></div><div data-dk-slot="donate"></div></div>', { title: (shopUl && p.shopTitle) || (shopUl ? 'Shop' : 'Support'), sub: '' });
 
     var key = 'dk:in:' + (p.slug || '');
-    var entered = preview || REDUCE.matches;
-    try { if (sessionStorage.getItem(key)) entered = true; } catch (e) {}
+    var entered = true;                 // v36-9: no "click to enter" gate; the star zoom plays by itself instead
 
     var deck = document.createElement('div');
     deck.className = 'dk-deck' + (preview ? ' dk-preview' : '') + (entered ? ' dk-on' : '');
@@ -250,8 +281,7 @@
       + '<div class="dk-stage">' + html + '</div>'
       + '<nav class="dk-dots" aria-label="Profile sections"></nav>'
       + '<div class="dk-count" aria-hidden="true"><b data-dk-num>01</b><span data-dk-total></span><em data-dk-name></em></div>'
-      + '<div class="dk-hint" aria-hidden="true"><i></i><span>scroll</span></div>'
-      + (entered ? '' : '<button type="button" class="dk-splash" data-dk-enter><span>click to enter</span></button>');
+      + '<div class="dk-hint" aria-hidden="true"><i></i><span>scroll</span></div>';
 
     function slot(k, node, wrap) { var s = deck.querySelector('[data-dk-slot="' + k + '"]'); if (!s) return; if (!node) { if (wrap) s.remove(); return; } s.appendChild(take(node)); }
     var par = deck.querySelector('.dk-par');
@@ -440,10 +470,11 @@
       if (song && p.musicAuto !== false) { var st = state(); if (!(mine(st) && st.playing)) songCtl('toggle'); }
     }
     if (entered && !preview && !REDUCE.matches) typeBio();
-    if (!entered) {
-      var sp0 = deck.querySelector('.dk-splash');
-      var onEnterKey = function (e) { if (!document.body.contains(deck)) { document.removeEventListener('keydown', onEnterKey); return; } if (e.key === 'Enter' || e.key === ' ') { if (document.activeElement === sp0 || document.activeElement === document.body) { e.preventDefault(); enter(); } document.removeEventListener('keydown', onEnterKey); } };
-      document.addEventListener('keydown', onEnterKey);
+    if (!preview && !REDUCE.matches) {                                    // opening animation: the star zooms in, then the slides appear (nothing to tap)
+      var acc = (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '').trim() || '#ff6a3d';
+      deck.classList.add('dk-opening');
+      var starEnd = starZoom(deck, acc, function () { deck.classList.remove('dk-opening'); });
+      setTimeout(starEnd, 4000);                                          // never get stuck
     }
 
     /* ── clicks ── */

@@ -151,3 +151,66 @@ body.mp-inline .mpx-mini{display:none !important}
 .mpx-lrow:hover,.mpx-lrow:focus-visible{background:rgba(255,255,255,.12)}
 .mpx-lrow b{font-size:14px}.mpx-lrow span{font-size:12px;color:rgba(255,255,255,.6)}
 .mpx-lrow em{font-style:normal;font-size:10.5px;font-weight:700;color:#4ade80;margin-left:auto}
+
+
+/* ═══ v36-8 · transparent player + lyrics, follows light / dark mode, no flicker ═══
+   Colours now come from the site's own tokens (--text, --muted, --ink, --panel-solid) so Light and Dark mode both cover the player.
+   The big sheet and the lyrics are see-through glass over a soft tint of the cover art instead of a solid black page. */
+.mpx-sheet{
+  --mp-fg:var(--text,#f6f1ee);--mp-fg2:color-mix(in srgb,var(--text,#fff) 70%,transparent);--mp-fg3:color-mix(in srgb,var(--text,#fff) 52%,transparent);--mp-fg4:color-mix(in srgb,var(--text,#fff) 34%,transparent);
+  --mp-glass:color-mix(in srgb,var(--ink,#fff) 7%,transparent);--mp-glass2:color-mix(in srgb,var(--ink,#fff) 12%,transparent);--mp-edge:color-mix(in srgb,var(--ink,#fff) 14%,transparent);
+  color:var(--mp-fg);
+  background:radial-gradient(90% 60% at 20% 0%,color-mix(in srgb,var(--accent) 26%,transparent),transparent 70%),
+    radial-gradient(70% 50% at 100% 100%,color-mix(in srgb,var(--accent-2,var(--accent)) 18%,transparent),transparent 70%),
+    color-mix(in srgb,var(--bg,#0d0a0c) 62%,transparent);
+  -webkit-backdrop-filter:blur(26px) saturate(1.25);backdrop-filter:blur(26px) saturate(1.25)}
+.mpx-sheet::after{background:linear-gradient(180deg,color-mix(in srgb,var(--bg,#080607) 10%,transparent),color-mix(in srgb,var(--bg,#080607) 38%,transparent))}
+.mpx-bg{opacity:.34}
+.mpx-bg img{filter:blur(48px) saturate(1.4)}
+.mpx-grab{background:var(--mp-fg4)}
+.mpx-from span{color:var(--mp-fg3)}
+.mpx-ic{color:var(--mp-fg);background:var(--mp-glass)}
+.mpx-ic:hover{background:var(--mp-glass2)}
+.mpx-ic.lg{background:transparent}
+.mpx-info h2{color:var(--mp-fg)}
+.mpx-info p{color:var(--mp-fg2)}
+.mpx-seek{accent-color:var(--mp-fg)}
+.mpx-times{color:var(--mp-fg3)}
+.mpx-big{background:var(--mp-fg);color:var(--bg,#111);box-shadow:0 18px 36px -16px rgba(0,0,0,.45)}
+.mpx-note{color:var(--mp-fg3)}.mpx-note a,.mpx-note b{color:var(--mp-fg)}
+.mpx-cover{box-shadow:0 30px 60px -30px rgba(0,0,0,.55),0 0 0 1px var(--mp-edge) inset}
+
+/* lyrics: fully transparent, no box, no blur layer of their own */
+.mpx-lyrics{background:transparent;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0}
+.mpx-lyrics>header b{color:var(--mp-fg)}
+.mpx-lsrc{color:var(--mp-fg3)}
+.mpx-lines li{color:var(--mp-fg4);will-change:color,transform}
+.mpx-lines li.on{color:var(--mp-fg)}
+.mpx-plain{color:var(--mp-fg2)}
+.mpx-lhint{color:var(--mp-fg3)}
+.mpx-lstate{color:var(--mp-fg2)}.mpx-lstate b{color:var(--mp-fg)}
+.mpx-lfind{color:var(--mp-fg);background:var(--mp-glass2)}.mpx-lfind:hover{background:color-mix(in srgb,var(--ink,#fff) 20%,transparent)}
+.mpx-lfind.big{background:var(--mp-fg);color:var(--bg,#111)}
+.mpx-lform input{color:var(--mp-fg);background:var(--mp-glass);border-color:var(--mp-edge)}
+.mpx-lform input::placeholder{color:var(--mp-fg4)}
+.mpx-lform button{color:var(--bg,#111);background:var(--mp-fg)}
+.mpx-lmsg{color:var(--mp-fg2)}
+.mpx-lrow{color:var(--mp-fg)}.mpx-lrow:hover,.mpx-lrow:focus-visible{background:var(--mp-glass2)}
+.mpx-lrow span{color:var(--mp-fg3)}
+.mpx-lbody:focus-visible{outline-color:var(--mp-fg)}
+
+/* mini bar: lighter glass that follows the mode */
+.mpx-mini{background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 12%,transparent),transparent 55%),color-mix(in srgb,var(--panel-solid,var(--panel)) 58%,transparent);
+  border-color:color-mix(in srgb,var(--ink,#fff) 14%,transparent)}
+
+/* ── flicker fixes ──
+   1) the bar and the sheet each sit on their own GPU layer, so the blur is not recomputed while the progress bar / lyrics move
+   2) the progress bar scrolls with transform only (no layout), 3) no transition while the song is only ticking forward */
+.mpx-mini,.mpx-sheet{transform-style:flat;backface-visibility:hidden;-webkit-backface-visibility:hidden;contain:layout paint}
+.mpx-mini{will-change:transform,opacity}
+.mpx-sheet:not(.open){-webkit-backdrop-filter:none;backdrop-filter:none}        /* no blur work while it is off screen */
+.mpx-bar i{will-change:transform;transition:transform .25s linear}
+.mpx-mini.playing .mpx-art{animation:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}   /* the pulsing ring repainted the blur behind it every frame */
+.mpx-lbody{contain:content;overscroll-behavior:contain}
+.mpx-lines{will-change:auto}
+html.mode-swap .mpx-mini,html.mode-swap .mpx-sheet{transition:none!important}
