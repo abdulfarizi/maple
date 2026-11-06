@@ -24,7 +24,7 @@ html.mode-vt::view-transition-old(root),html.mode-vt::view-transition-new(root){
 html.mode-vt::view-transition-old(root){z-index:1}
 html.mode-vt::view-transition-new(root){z-index:2}
 /* the tapped button leaves the page snapshot and zooms on its own, so it is the visible origin of the circle */
-html.mode-vt .mode-switch.pop{view-transition-name:mode-btn;animation:none}
+html.mode-vt .mode-switch.pop{animation:none}
 ::view-transition-group(mode-btn){animation-duration:.45s;animation-timing-function:cubic-bezier(.22,1,.36,1)}
 ::view-transition-old(mode-btn),::view-transition-new(mode-btn){mix-blend-mode:normal;animation-duration:.5s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-fill-mode:both}
 ::view-transition-old(mode-btn){animation-name:ms-out}
@@ -32,3 +32,6 @@ html.mode-vt .mode-switch.pop{view-transition-name:mode-btn;animation:none}
 @keyframes ms-out{to{opacity:0;transform:scale(.35) rotate(-90deg)}}
 @keyframes ms-in{from{opacity:0;transform:scale(.35) rotate(90deg)}}
 @media (prefers-reduced-motion:reduce){.mode-switch.pop{animation:none}}
+
+/* v36-10e · lighter circle reveal: while it runs, CSS animations are paused (the page is not redrawn every frame) */
+html.mode-swap *,html.mode-swap *::before,html.mode-swap *::after{animation-play-state:paused!important}

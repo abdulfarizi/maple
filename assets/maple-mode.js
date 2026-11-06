@@ -88,7 +88,7 @@
       try {
         root.animate(
           { clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + r + 'px at ' + x + 'px ' + y + 'px)'] },
-          { duration: 620, easing: 'cubic-bezier(.22,.8,.24,1)', pseudoElement: '::view-transition-new(root)' }
+          { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)', pseudoElement: '::view-transition-new(root)' }
         );
       } catch (e) { /* no pseudoElement animation: the browser's default cross-fade runs */ }
     }, function () {});

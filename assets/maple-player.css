@@ -214,3 +214,11 @@ body.mp-inline .mpx-mini{display:none !important}
 .mpx-lbody{contain:content;overscroll-behavior:contain}
 .mpx-lines{will-change:auto}
 html.mode-swap .mpx-mini,html.mode-swap .mpx-sheet{transition:none!important}
+
+
+/* ═══ v36-10 · full-screen player: lyrics readable in light mode (the idle lines were only 34 % ink) ═══ */
+.mpx-lines li{color:color-mix(in srgb,var(--text,#fff) 50%,transparent)}
+.mpx-lines li.on{color:var(--mp-fg)}
+:root[data-mode=light] .mpx-lines li{color:color-mix(in srgb,var(--text,#111) 60%,transparent)}
+:root[data-mode=light] .mpx-lines li.on{color:var(--text,#111)}
+:root[data-mode=light] .mpx-lsrc,:root[data-mode=light] .mpx-lhint{color:color-mix(in srgb,var(--text,#111) 66%,transparent)}

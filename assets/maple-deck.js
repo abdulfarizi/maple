@@ -122,6 +122,7 @@
       if (!document.body.contains(cv)) { api.stop(); return; }
       raf = requestAnimationFrame(frame);
       if ((flip ^= 1)) return;                       // 30 fps is plenty for a background
+      if (document.documentElement.classList.contains('mode-swap')) return;   // light/dark switch running: skip the canvas redraw (lighter)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
       boost *= 0.94;
       for (var i = 0; i < parts.length; i++) {
