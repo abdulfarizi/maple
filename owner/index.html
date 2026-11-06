@@ -37,6 +37,15 @@
 
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
         html { background:var(--bg); scroll-behavior:smooth; }
+        /* v31: inside the M-ID app the global header + bottom player take over this card's own header and music button */
+        html.in-app .shell > .topbar, html.in-app #music-panel, #music-btn { display:none !important; }
+        html.in-app body { padding-top:14px; }
+        html.in-app.in-dock body { padding-bottom:calc(62px + 26px + 34px + var(--mp-space,0px) + env(safe-area-inset-bottom,0px)); }
+        .ptabs { overflow-x:auto; scrollbar-width:none; }
+        .ptabs::-webkit-scrollbar { display:none; }
+        .ptab { flex:1 0 auto; min-width:72px; }
+        .ptab.hidden { display:none; }
+        .pane-mx { padding:2px 0 6px; }
         html.in-dock body { padding-bottom:calc(62px + 26px + 34px + env(safe-area-inset-bottom,0px)); }
         body { font-family:var(--sans); color:var(--text); min-height:100vh; min-height:100dvh; display:flex; justify-content:center; padding:max(22px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom)); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
         a { color:inherit; text-decoration:none; }
@@ -295,6 +304,21 @@ html{background:var(--bg)}
     <script src="/assets/maple-pay.js?v=4" defer></script>
 </head>
 <body>
+<script>
+/* v33: put this profile's last-seen colours on before anything paints, so the loading star and card
+   start in the owner's theme instead of flashing the default orange first */
+(function () {
+    try {
+        var path = (window.parent !== window ? parent.location.pathname : location.pathname) || '';
+        var slug = (path.split('/').filter(Boolean)[0] || '').toLowerCase();
+        if (new URLSearchParams(location.search).get('preview') === '1' || !slug) return;
+        var c = JSON.parse(localStorage.getItem('dig-look:' + slug) || 'null'); if (!c || !c.theme) return;
+        var r = document.documentElement; r.setAttribute('data-theme', c.theme);
+        if (c.vars) Object.keys(c.vars).forEach(function (k) { if (/^--accent/.test(k)) r.style.setProperty(k, c.vars[k]); });
+        if (c.bg) r.style.background = c.bg;
+    } catch (e) {}
+})();
+</script>
 <div id="star-intro"></div>
 
 <div class="grid-bg" id="grid-bg"></div>
@@ -385,14 +409,20 @@ html{background:var(--bg)}
         </a>
     </section>
 
+    <div class="mx-stack" id="mx-stack" hidden></div>
+
     <section class="pager single" id="pager">
         <div class="ptabs hidden" id="ptabs" role="tablist" aria-label="Sections">
-            <button type="button" role="tab" class="ptab active" data-ptab="0" aria-selected="true"><span data-i18n="tabLinks">Links</span></button>
-            <button type="button" role="tab" class="ptab" data-ptab="1" aria-selected="false"><span id="ptab-shop-text"></span></button>
+            <button type="button" role="tab" class="ptab active" data-ptab="links" aria-selected="true"><span data-i18n="tabLinks">Links</span></button>
+            <button type="button" role="tab" class="ptab hidden" data-ptab="music" aria-selected="false"><span>Music</span></button>
+            <button type="button" role="tab" class="ptab hidden" data-ptab="anime" aria-selected="false"><span>Anime</span></button>
+            <button type="button" role="tab" class="ptab hidden" data-ptab="shop" aria-selected="false"><span id="ptab-shop-text"></span></button>
             <span class="pbar" id="pbar"></span>
         </div>
         <div class="pslides" id="pslides">
             <div class="pslide" id="pane-links"><div style="display:flex; flex-direction:column; gap:20px;" id="sections"></div></div>
+            <div class="pslide pane-mx hidden" id="pane-music"></div>
+            <div class="pslide pane-mx hidden" id="pane-anime"></div>
             <div class="pslide hidden" id="pane-shop">
                 <div class="shop-head"><b id="shop-title"></b><small id="shop-seller"></small></div>
                 <p class="shop-note hidden" id="shop-note"></p>
@@ -421,7 +451,13 @@ html{background:var(--bg)}
 <div id="toast"></div>
 
 <script src="/assets/launch.js?v=2"></script>
+<link rel="stylesheet" href="/assets/maple-collections.css?v=2" />
+<script src="/assets/maple-collections.js?v=3"></script>
 <script src="/assets/maple-music.js?v=1"></script>
+<link rel="stylesheet" href="/assets/maple-stack.css?v=4" />
+<script src="/assets/maple-stack.js?v=5"></script>
+<link rel="stylesheet" href="/assets/maple-reveal.css?v=1" />
+<script src="/assets/maple-reveal.js?v=1" defer></script>
 <script>
 (function () {
     'use strict';
@@ -433,6 +469,8 @@ html{background:var(--bg)}
     // embedded full-page cards run edge to edge under the floating dock, so keep the end of the card clear of it
     if (EMBED && qs.get('preview') !== '1') document.documentElement.classList.add('in-dock');
     const PREVIEW = qs.get('preview') === '1';
+    const IN_APP = window.parent !== window;     // v31: the app's global header + bottom player replace this card's own header controls
+    if (IN_APP) document.documentElement.classList.add('in-app');
     const $ = (id) => document.getElementById(id);
     const setHtml = (el, html) => { if (el.__h !== html) { el.innerHTML = html; el.__h = html; } };   // only touch the DOM when something really changed (no flicker)
     const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -619,11 +657,14 @@ html{background:var(--bg)}
         var backOut = function (u) { var c = 1.70158; return 1 + (c + 1) * Math.pow(u - 1, 3) + c * Math.pow(u - 1, 2); };
         var inOut = function (u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; };
     
+        var lastAccent = '';
         function setColor() {
             var accent = (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '').trim() || '#ff6a3d';
-            ring.setAttribute('stroke', accent);
+            if (accent === lastAccent) return; lastAccent = accent;
+            ring.style.stroke = accent;
             ring.style.filter = 'drop-shadow(0 0 10px ' + accent + ')';
         }
+        ring.style.transition = 'stroke .45s ease, filter .45s ease';
         function finish() { if (done) return; done = true; clearTimeout(safety); el.remove(); if (opts.onDone) opts.onDone(); }
     
         function frame(now) {
@@ -641,6 +682,7 @@ html{background:var(--bg)}
                 ringA = 1 - Math.max(0, (u - 0.5) / 0.5);
                 if (u >= 1) { finish(); return; }
             }
+            setColor();                                            // the theme can arrive mid-intro: ease into it
             var d = star(R, rot);
             hole.setAttribute('d', d); ring.setAttribute('d', d);
             ring.setAttribute('stroke-width', (2 + R * 0.012).toFixed(2)); ring.style.opacity = ringA;
@@ -728,6 +770,7 @@ html{background:var(--bg)}
         $('music-btn').classList.toggle('hidden', p.music === false);
         $('sfx-btn').classList.toggle('hidden', p.sfx === false);
         $('theme-btn').classList.toggle('hidden', p.themeSwitch === false || custom);
+        document.querySelectorAll('.topbar .lang').forEach((el) => el.classList.toggle('hidden', p.langSwitch === false));
         if (p.sfx === false) sfxEnabled = false;
     }
     function renderBanner(p) {
@@ -878,9 +921,15 @@ html{background:var(--bg)}
         opts = opts || {};
         P = normalize(profile || {});
         $('state').classList.add('hidden'); $('shell').hidden = false;
-        applyLook(P); try { window.__starExtras && window.__starExtras(P); } catch (e) {} renderBanner(P); renderIdentity(P); renderStats(P); renderChips(P); renderTexts(P);
+        applyLook(P);
+        if (!PREVIEW) try {
+            const r = document.documentElement, v = {};
+            ['--accent', '--accent-2', '--accent-soft', '--accent-glow'].forEach((k) => { const x = r.style.getPropertyValue(k); if (x) v[k] = x; });
+            localStorage.setItem('dig-look:' + P.slug, JSON.stringify({ theme: r.getAttribute('data-theme'), vars: v }));
+        } catch (e) {}
+        try { window.__starExtras && window.__starExtras(P); } catch (e) {} renderBanner(P); renderIdentity(P); renderStats(P); renderChips(P); renderTexts(P);
         renderReacts(P); renderActions(P); renderSections(P); renderSupport(P); renderBottom(P);
-        renderLove(P); renderShop(P); renderMusic(P); applyLang(lang); renderStatus(); renderClock();
+        renderLove(P); renderShop(P); renderCollections(P); renderMusic(P); applyLang(lang); renderStatus(); renderClock();
         const mine = !PREVIEW && viewerId() && viewerId() === P.id;
         $('owner-studio-btn').classList.toggle('show', !!mine);
         $('owner-pm-btn').classList.toggle('show', !PREVIEW && !!viewerId());
@@ -888,7 +937,7 @@ html{background:var(--bg)}
             firstRender = false;
             if (INTRO) { if (P.intro === false) INTRO.skip(); else INTRO.go(); }
             if (!PREVIEW && !OWN && P.confetti !== false && P.intro !== false) setTimeout(confetti, 1500);
-            if (!PREVIEW && !OWN && spotifyEmbed(P.spotify) && P.musicAuto !== false && P.music !== false && !muted) setTimeout(() => { if (!panelOpen) togglePanel(true); }, P.intro === false ? 700 : 2700);
+            if (!IN_APP && !PREVIEW && !OWN && spotifyEmbed(P.spotify) && P.musicAuto !== false && P.music !== false && !muted) setTimeout(() => { if (!panelOpen) togglePanel(true); }, P.intro === false ? 700 : 2700);
         }
     }
     window.renderCard = renderCard;
@@ -1022,9 +1071,8 @@ html{background:var(--bg)}
     const pager = { on: false };
     function renderShop(p) {
         const items = productsOf(p), seller = sellerWa(p), on = !!(p.shopEnabled && items.length && seller);
-        pager.on = on;
-        $('pager').classList.toggle('single', !on); $('ptabs').classList.toggle('hidden', !on); $('pane-shop').classList.toggle('hidden', !on);
-        if (!on) { if ($('pslides').scrollLeft) goPane(0, false); fitPager(); return; }
+        $('pane-shop').classList.toggle('hidden', !on); document.querySelector('.ptab[data-ptab="shop"]').classList.toggle('hidden', !on);
+        if (!on) { updatePager(); return; }
         const title = p.shopTitle || t('shopTitle');
         $('ptab-shop-text').textContent = title;
         $('shop-title').textContent = title;
@@ -1043,23 +1091,45 @@ html{background:var(--bg)}
                 <button type="button" class="prod-buy live" data-buy="${i}" ${sold ? 'disabled' : ''}>${sold ? esc(t('soldOut')) : '<i class="fa-brands fa-whatsapp"></i> ' + esc(t('buy'))}</button>
             </article>`;
         }).join(''));
+        updatePager();
+    }
+    // v31: Music I Like + Anime panes (rendered by maple-collections.js)
+    function renderCollections(p) {
+        // v32: Music + Anime are full sections under the card (maple-stack.js), no longer hidden behind tabs
+        const mx = window.MX, mOn = false, aOn = false;
+        $('pane-music').innerHTML = ''; $('pane-anime').innerHTML = '';
+        if (window.MXStack) window.MXStack.render($('mx-stack'), p);
+        if (window.MRail) window.MRail.refresh();
+        $('pane-music').classList.toggle('hidden', !mOn); $('pane-anime').classList.toggle('hidden', !aOn);
+        document.querySelector('.ptab[data-ptab="music"]').classList.toggle('hidden', !mOn);
+        document.querySelector('.ptab[data-ptab="anime"]').classList.toggle('hidden', !aOn);
+        if (mx) mx.mount($('pslides'), p);
+        updatePager();
+    }
+    function updatePager() {
+        const on = paneEls().length > 1; pager.on = on;
+        $('pager').classList.toggle('single', !on); $('ptabs').classList.toggle('hidden', !on);
+        if (!on) { if ($('pslides').scrollLeft) goPane(0, false); fitPager(); return; }
+        const i = Math.min(pagerIndex(), paneEls().length - 1); if ($('pslides').scrollLeft) goPane(i, false);
         moveBar(); fitPager();
     }
-    // Two sections under the profile: Links | Shop. Swipe sideways or tap a tab.
-    const paneEls = () => [$('pane-links'), $('pane-shop')];
+    // Sections under the profile: Links | Music | Anime | Shop (only the ones this owner uses). Swipe sideways or tap a tab.
+    const paneEls = () => ['pane-links', 'pane-music', 'pane-anime', 'pane-shop'].map((id) => $(id)).filter((el) => !el.classList.contains('hidden'));
+    const tabEls = () => [...document.querySelectorAll('.ptab')].filter((tb) => !tb.classList.contains('hidden'));
     function pagerIndex() { const sl = $('pslides'); return pager.on && sl.clientWidth ? Math.round(sl.scrollLeft / sl.clientWidth) : 0; }
     function fitPager() {
         const sl = $('pslides'); if (!pager.on) { sl.style.height = ''; return; }
-        const h = paneEls()[pagerIndex()].offsetHeight; if (h) sl.style.height = h + 'px';
+        const el = paneEls()[pagerIndex()], h = el && el.offsetHeight; if (h) sl.style.height = h + 'px';
     }
     function moveBar() {
-        const sl = $('pslides'), tabs = [...document.querySelectorAll('.ptab')], bar = $('pbar');
+        const sl = $('pslides'), tabs = tabEls(), bar = $('pbar');
         if (!pager.on || !sl.clientWidth || tabs.length < 2 || !tabs[0].offsetWidth) return;
-        const p = Math.min(1, Math.max(0, sl.scrollLeft / sl.clientWidth));
+        const p = Math.min(tabs.length - 1, Math.max(0, sl.scrollLeft / sl.clientWidth)), a = Math.floor(p), b = Math.min(a + 1, tabs.length - 1), f = p - a;
         const geo = tabs.map((tb) => { const w = tb.firstElementChild.offsetWidth; return { w, x: tb.offsetLeft + (tb.offsetWidth - w) / 2 }; });
-        bar.style.width = (geo[0].w + (geo[1].w - geo[0].w) * p) + 'px';
-        bar.style.transform = 'translateX(' + (geo[0].x + (geo[1].x - geo[0].x) * p) + 'px)';
-        const i = p > 0.5 ? 1 : 0;
+        bar.style.width = (geo[a].w + (geo[b].w - geo[a].w) * f) + 'px';
+        bar.style.transform = 'translateX(' + (geo[a].x + (geo[b].x - geo[a].x) * f) + 'px)';
+        const i = Math.round(p);
+        if (tabs[i] && tabs[i].scrollIntoView && $('ptabs').scrollWidth > $('ptabs').clientWidth) $('ptabs').scrollLeft = Math.max(0, tabs[i].offsetLeft - 40);
         tabs.forEach((tb, k) => { tb.classList.toggle('active', k === i); tb.setAttribute('aria-selected', String(k === i)); });
     }
     let paneAnim = null;
@@ -1067,7 +1137,7 @@ html{background:var(--bg)}
         const sl = $('pslides'), to = i * sl.clientWidth, from = sl.scrollLeft;
         if (paneAnim) { cancelAnimationFrame(paneAnim.id); paneAnim = null; sl.style.scrollSnapType = ''; }
         const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (pager.on) { const h = paneEls()[i].offsetHeight; if (h) sl.style.height = h + 'px'; }   // height eases while the slide runs
+        if (pager.on) { const el = paneEls()[i], h = el && el.offsetHeight; if (h) sl.style.height = h + 'px'; }   // height eases while the slide runs
         if (!smooth || reduce || Math.abs(to - from) < 1) { sl.scrollLeft = to; return; }
         sl.style.scrollSnapType = 'none';
         let t0 = 0; const a = paneAnim = { id: 0 };
@@ -1082,9 +1152,9 @@ html{background:var(--bg)}
         const sl = $('pslides'); let timer;
         sl.addEventListener('scroll', () => { moveBar(); clearTimeout(timer); timer = setTimeout(() => { if (!paneAnim) fitPager(); }, 90); }, { passive: true });
         ['touchstart', 'wheel'].forEach((ev) => sl.addEventListener(ev, () => { if (paneAnim) { cancelAnimationFrame(paneAnim.id); paneAnim = null; sl.style.scrollSnapType = ''; } }, { passive: true }));
-        document.querySelectorAll('.ptab').forEach((tb) => tb.addEventListener('click', () => { haptic(8); playTone(600, 0.04); goPane(Number(tb.dataset.ptab)); }));
+        document.querySelectorAll('.ptab').forEach((tb) => tb.addEventListener('click', () => { haptic(8); playTone(600, 0.04); goPane(Math.max(0, paneEls().indexOf($('pane-' + tb.dataset.ptab)))); }));
         window.addEventListener('resize', () => { fitPager(); moveBar(); });
-        if (window.ResizeObserver) { const ro = new ResizeObserver(() => fitPager()); ro.observe($('pane-links')); ro.observe($('pane-shop')); }
+        if (window.ResizeObserver) { const ro = new ResizeObserver(() => fitPager()); ['pane-links', 'pane-music', 'pane-anime', 'pane-shop'].forEach((id) => ro.observe($(id))); }
     })();
     function buyMessage(p, item, q) {
         const c = curOf(p);
@@ -1123,7 +1193,23 @@ html{background:var(--bg)}
         $('mp-theme-name').textContent = th;
         $('mp-tracks').innerHTML = list.map((tr) => `<li><button type="button" data-track="${tr.id}" class="${cur.on && cur.theme === th && cur.index === tr.id ? 'on' : ''}"><i class="fa-solid ${cur.on && cur.theme === th && cur.index === tr.id ? 'fa-volume-high' : 'fa-play'}"></i>${esc(tr.title)}<small>${esc(tr.mood)} · ${tr.bpm}</small></button></li>`).join('');
     }
-    music.onchange = () => { renderTracks(); syncSoundUi(); };
+    const reportLofi = () => { if (IN_APP) try { parent.postMessage({ maple: 'lofi-state', playing: music.playing(), name: curTheme().replace(/^./, (c) => c.toUpperCase()) + ' lofi' }, location.origin); } catch {} };
+    music.onchange = () => { renderTracks(); syncSoundUi(); reportLofi(); };
+    window.addEventListener('message', (e) => {
+        const d = e.data; if (e.origin !== location.origin || !d || !P) return;
+        if (d.maple === 'lofi') {
+            if (d.act === 'stop') { if (music.playing()) music.stop(); }
+            else if (d.act === 'toggle') { if (music.playing()) music.stop(); else { if (muted) setMuted(false); music.play(curTheme(), 0); } }
+            syncSoundUi(); reportLofi();
+        } else if (d.maple === 'ctl') {
+            if (d.theme && THEMES.includes(d.theme) && P.themeSwitch !== false && !HEX.test(P.accent)) {
+                document.documentElement.setAttribute('data-theme', d.theme);
+                if (!PREVIEW) try { localStorage.setItem('dig-theme:' + P.slug, d.theme); } catch {}
+            }
+            if (d.lang && I18N[d.lang] && P.langSwitch !== false) { applyLang(d.lang); try { localStorage.setItem(LANG_KEY, lang); } catch {} }
+            if (d.sfx === 'toggle' && P.sfx !== false) $('sfx-btn').click();
+        } else if (d.maple === 'mp-space') document.documentElement.style.setProperty('--mp-space', (Number(d.px) || 0) + 'px');
+    });
     // the card theme changed (visitor taps the palette, or Studio changes it): the music follows
     new MutationObserver(() => { music.setTheme(curTheme()); renderTracks(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     function buildEmbed() {
@@ -1190,7 +1276,8 @@ html{background:var(--bg)}
     });
     $('theme-btn').addEventListener('click', () => {
         haptic(10); playTone(660, 0.06, 'triangle');
-        const cur = document.documentElement.getAttribute('data-theme'), next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+        const allowed = P && Array.isArray(P.themes) && P.themes.length ? THEMES.filter((x) => P.themes.includes(x)) : THEMES, list = allowed.length ? allowed : THEMES;
+        const cur = document.documentElement.getAttribute('data-theme'), next = list[(list.indexOf(cur) + 1) % list.length];
         document.documentElement.setAttribute('data-theme', next);
         try { localStorage.setItem('dig-theme:' + (P ? P.slug : ''), next); } catch {}
         showToast(t('toastTheme') + ': ' + next.toUpperCase());
