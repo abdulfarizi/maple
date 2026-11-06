@@ -18,7 +18,7 @@
     <meta name="description" content="M-ID: one link for every game ID and social handle. Claim yours." />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Unbounded:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Unbounded:wght@600;700&display=swap" rel="stylesheet" />
     
     <!-- Supabase bridge: real Supabase Auth sessions + database rules (see supabase_setup.sql) -->
     <script>
@@ -44,8 +44,14 @@
     'avatarShape','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid',
     'spotify','musicAuto','shopEnabled','shopTitle','shopNote','shopWhatsApp','currency','products',
     'payEnabled','payQr','payFg','payBg','payDots','payIcon','payAmount','qrIcon',
-    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass','glassBlur','cardStyle','bgFx','listed','blocks','page','gifs','bdTpl','bd'];
-  const BOOLS = ['bgFx','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','payEnabled','payAmount','openGame','showLove','liquidGlass','listed'];
+    'donate','donateLabel','contactPhone','contactEmail','openGame','showLove','liquidGlass','glassBlur','cardStyle','bgFx','listed','blocks','page','gifs','bdTpl','bd',
+    // v31: Music I Like, Anime, bottom player + visitor controls
+    'musicLikes','anime','animeOn','musicOn','lyrics','langSwitch','themes','song',
+    // v32: section titles on the card
+    'musicTitle','musicSub','animeTitle','animeSub',
+    // v36: Glass slides background
+    'deckBg','deckBgUrl','deckBgKind','deckDim','deckBlur'];
+  const BOOLS = ['bgFx','showVisits','showTime','showReactions','showCta','intro','confetti','sfx','music','themeSwitch','grid','musicAuto','shopEnabled','payEnabled','payAmount','openGame','showLove','liquidGlass','listed','animeOn','musicOn','lyrics','langSwitch'];
   const CURRENCIES = ['auto','MYR','SGD','IDR','BND','PHP','THB','USD'];
   const HEX_RE = /^#[0-9a-f]{6}$/i;
   const clampInt = (v, lo, hi, dflt) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt; };
@@ -65,7 +71,19 @@
     v = String(v || '').trim();
     const m = v.match(/^spotify:(playlist|album|track|artist|show|episode):([A-Za-z0-9]{22})$/)
       || v.match(/^https?:\/\/open\.spotify\.com\/(?:intl-[a-z]{2,5}\/)?(?:embed\/)?(playlist|album|track|artist|show|episode)\/([A-Za-z0-9]{22})(?:[?#\/].*)?$/i);
-    return m ? `https://open.spotify.com/${m[1].toLowerCase()}/${m[2]}` : '';
+    if (m) return `https://open.spotify.com/${m[1].toLowerCase()}/${m[2]}`;
+    return cleanYouTube(v);
+  }
+  // v36-1: YouTube links (watch, youtu.be, shorts, music.youtube.com) are normalised to one canonical form
+  function cleanYouTube(v) {
+    v = String(v || '').trim(); let id = '';
+    if (/^[A-Za-z0-9_-]{11}$/.test(v)) id = v;
+    else { try {
+      const u = new URL(/^https?:\/\//i.test(v) ? v : 'https://' + v), h = u.hostname.replace(/^(www\.|m\.|music\.)/, '');
+      if (h === 'youtu.be') id = u.pathname.slice(1, 12);
+      else if (h === 'youtube.com' || h === 'youtube-nocookie.com') id = u.searchParams.get('v') || ((u.pathname.match(/^\/(?:embed|shorts|live|v)\/([A-Za-z0-9_-]{11})/) || [])[1] || '');
+    } catch (e) {} }
+    return /^[A-Za-z0-9_-]{11}$/.test(id) ? `https://www.youtube.com/watch?v=${id}` : '';
   }
   const cleanRows = (a, max) => (Array.isArray(a) ? a : []).slice(0, max)
     .map((x) => ({ platform: str(x && x.platform, 40), value: str(x && x.value, 200) })).filter((x) => x.platform && x.value);
@@ -104,6 +122,41 @@
     if (QR_ICONS.includes(v)) return v;
     if (v.startsWith('t:')) { const t = Array.from(v.slice(2).replace(/[<>&"'\\]/g, '')).slice(0, 2).join(''); if (t) return 't:' + t; }
     return fb;
+  }
+  // v31 collections: rebuilt from known fields only; artwork must come from the catalogue CDNs
+  const ART_RE = /^https:\/\/(?:i\.ytimg\.com\/vi\/[A-Za-z0-9_-]{11}\/[a-z0-9]+\.jpg$|i\.scdn\.co|image-cdn-[a-z0-9-]+\.spotifycdn\.com|mosaic\.scdn\.co|[a-z0-9-]+\.anilist\.co|s4\.anilist\.co)\/\S{1,400}$/i;
+  // uploaded songs live in the Supabase Storage bucket "song-media" (see supabase_songs.sql), with an optional uploaded cover
+  const SONG_RE = /^https:\/\/qebbuxixnqsqjuprfpyv\.supabase\.co\/storage\/v1\/object\/public\/song-media\/[0-9a-f-]{36}\/[a-z0-9]{8,24}\.(?:mp3|m4a|aac|ogg|wav|flac|webm)$/;
+  const SONG_ART_RE = /^https:\/\/qebbuxixnqsqjuprfpyv\.supabase\.co\/storage\/v1\/object\/public\/song-media\/[0-9a-f-]{36}\/[a-z0-9]{8,24}-art\.jpg(\?v=[a-z0-9]{1,12})?$/;
+  function cleanSong(x) {
+    if (!x || typeof x !== 'object') return null;
+    const audio = String(x.audio || '').trim(); if (!SONG_RE.test(audio)) return null;
+    const art = String(x.art || '').trim();
+    return { audio, title: str(x.title, 120) || 'Untitled', artist: str(x.artist, 120), art: SONG_ART_RE.test(art) || ART_RE.test(art) ? art : '',
+      durationMs: clampInt(x.durationMs, 0, 3600000, 0), note: str(x.note, 140) };
+  }
+  function cleanMusicLikes(a) {
+    const seen = {};
+    return (Array.isArray(a) ? a : []).slice(0, 24).map((x) => {
+      if (x && x.audio) { const f = cleanSong(x); if (!f || seen[f.audio]) return null; seen[f.audio] = 1; return f; }
+      const url = cleanSpotify(x && x.url); if (!url || seen[url] || !/\/(track|album|playlist|episode)\/|youtube\.com\/watch/.test(url)) return null; seen[url] = 1;
+      const art = String((x && x.art) || '').trim();
+      return { url, title: str(x.title, 120), artist: str(x.artist, 120), art: ART_RE.test(art) ? art : '', note: str(x.note, 140) };
+    }).filter(Boolean);
+  }
+  const ANIME_STATUS = ['watching','completed','hold','dropped','plan'];
+  function cleanAnime(a) {
+    const seen = {};
+    return (Array.isArray(a) ? a : []).slice(0, 48).map((x) => {
+      const id = clampInt(x && x.id, 1, 9999999, 0); if (!id || seen[id]) return null; seen[id] = 1;
+      const cover = String(x.cover || '').trim(), rating = Number(x.rating), score = Number(x.score);
+      return { id, title: str(x.title, 140) || 'Untitled', alt: str(x.alt, 140), cover: ART_RE.test(cover) ? cover : '',
+        year: clampInt(x.year, 0, 2100, 0), eps: clampInt(x.eps, 0, 5000, 0), format: str(x.format, 16).replace(/[^A-Z_]/gi, ''),
+        genres: (Array.isArray(x.genres) ? x.genres : []).slice(0, 4).map((g) => str(g, 24)).filter(Boolean),
+        score: Number.isFinite(score) ? clampInt(score, 0, 100, 0) : 0, desc: str(x.desc, 320),
+        status: ANIME_STATUS.includes(x.status) ? x.status : 'completed',
+        rating: Number.isFinite(rating) ? Math.min(10, Math.max(0, Math.round(rating * 2) / 2)) : 0, note: str(x.note, 140) };
+    }).filter(Boolean);
   }
   // Free-canvas builder: every block is rebuilt from known fields only
   const BTYPES = ['text','img','btn','shape','emoji','avatar','ask'];
@@ -155,7 +208,7 @@
   }
   // Coerce every layout option to a safe value (never trust what the browser sent)
   function cleanOptions(m) {
-    m.layout = ['star','builder'].includes(m.layout) ? m.layout : 'basic';
+    m.layout = ['star','builder','deck'].includes(m.layout) ? m.layout : 'basic';
     if (m.blocks !== undefined) m.blocks = cleanBlocks(m.blocks);
     if (m.page !== undefined) m.page = cleanPage(m.page);
     if (m.gifs !== undefined) m.gifs = cleanGifs(m.gifs);
@@ -184,6 +237,18 @@
     if (m.payDots !== undefined) m.payDots = ['square','rounded','dots'].includes(m.payDots) ? m.payDots : 'rounded';
     if (m.payIcon !== undefined) m.payIcon = cleanQrIcon(m.payIcon, 'star');
     if (m.qrIcon !== undefined) m.qrIcon = cleanQrIcon(m.qrIcon, 'leaf');
+    for (const k of ['musicTitle','animeTitle']) if (m[k] !== undefined) m[k] = str(m[k], 40);
+    for (const k of ['musicSub','animeSub']) if (m[k] !== undefined) m[k] = str(m[k], 80);
+    if (m.deckBg !== undefined) m.deckBg = ['theme','banner','custom'].includes(m.deckBg) ? m.deckBg : 'theme';
+    if (m.deckBgUrl !== undefined) { const u = String(m.deckBgUrl || '').trim(); m.deckBgUrl = u.length <= 600 && /^https:\/\/[^\s"'<>]+$/i.test(u) ? u : ''; }
+    if (m.deckBgKind !== undefined) m.deckBgKind = m.deckBgKind === 'video' ? 'video' : 'image';
+    if (m.deckDim !== undefined) m.deckDim = clampInt(m.deckDim, 0, 90, 40);
+    if (m.deckBlur !== undefined) m.deckBlur = clampInt(m.deckBlur, 0, 24, 0);
+    if (m.deckBg === 'custom' && !m.deckBgUrl) m.deckBg = 'theme';
+    if (m.musicLikes !== undefined) m.musicLikes = cleanMusicLikes(m.musicLikes);
+    if (m.song !== undefined) m.song = cleanSong(m.song);
+    if (m.anime !== undefined) m.anime = cleanAnime(m.anime);
+    if (m.themes !== undefined) m.themes = (Array.isArray(m.themes) ? m.themes : []).slice(0, 60).map((t) => str(t, 24).replace(/[^a-z0-9-]/gi, '')).filter(Boolean);
     if (m.gaming !== undefined) m.gaming = cleanRows(m.gaming, 24);
     if (m.channels !== undefined) m.channels = cleanRows(m.channels, 24);
     m.cardStyle = ['default','outline','solid','neon','bubble','tinted'].includes(m.cardStyle) ? m.cardStyle : 'default';
@@ -297,6 +362,9 @@
     const email = String(s.claims.email || '').toLowerCase();
     return { token: s.token, uid: s.claims.sub, email, isOwner: email === OWNER_EMAIL };
   }
+  // v34: the Studio's song uploader asks for the logged-in user's token (sent only to this site's /api/songs)
+  window.__mAuth = () => authUser().then((a) => (a ? { token: a.token, uid: a.uid } : null));
+  window.__mSb = { url: SUPABASE_URL, key: SUPABASE_KEY };
   function bearerFrom(options) {
     const h = options.headers;
     if (!h) return null;
@@ -876,7 +944,11 @@ r.style.setProperty('--accent',a);r.style.setProperty('--accent-2',b);r.style.se
     <script src="/assets/maple-pay.js?v=4" defer></script>
     <script src="/assets/maple-pager.js?v=7"></script>
     <script src="/assets/launch.js?v=2"></script>
-    <script type="module" crossorigin src="/assets/index-maple1.js?v=13"></script>
+    <script src="/assets/maple-collections.js?v=4" defer></script>
+    <script src="/assets/maple-deck.js?v=7" defer></script>
+    <script src="/assets/maple-deck-studio.js?v=1" defer></script>
+    <script src="/assets/maple-profile.js?v=2" defer></script>
+    <script type="module" crossorigin src="/assets/index-maple1.js?v=20"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-bhqqsojp.css?v=2" />
     <link rel="stylesheet" href="/assets/maple.css?v=3" />
     <link rel="stylesheet" href="/assets/themes.css?v=4" />
@@ -885,17 +957,26 @@ r.style.setProperty('--accent',a);r.style.setProperty('--accent-2',b);r.style.se
     <link rel="stylesheet" href="/assets/card-ui.css?v=2" />
     <link rel="stylesheet" href="/assets/maple-ui.css?v=5" />
     <link rel="stylesheet" href="/assets/maple-pay.css?v=3" />
-    <link rel="stylesheet" href="/assets/maple-pager.css?v=6" />
+    <link rel="stylesheet" href="/assets/maple-pager.css?v=7" />
     <link rel="stylesheet" href="/assets/studio.css?v=3" />
     <link rel="stylesheet" href="/assets/maple-design.css?v=2" />
     <link rel="stylesheet" href="/assets/maple-shell.css?v=1" />
-    <link rel="stylesheet" href="/assets/maple-m.css?v=1" />
+    <link rel="stylesheet" href="/assets/maple-m.css?v=3" />
+    <link rel="stylesheet" href="/assets/maple-collections.css?v=2" />
+    <link rel="stylesheet" href="/assets/maple-player.css?v=4" />
+    <link rel="stylesheet" href="/assets/maple-header.css?v=1" />
+    <link rel="stylesheet" href="/assets/maple-home.css?v=1" />
+    <link rel="stylesheet" href="/assets/maple-deck.css?v=6" />
     <script src="/assets/maple-studio.js?v=1" defer></script>
     <script src="/assets/maple-builder.js?v=3" defer></script>
-    <script src="/assets/maple-forum.js?v=4" defer></script>
+    <script src="/assets/maple-forum.js?v=5" defer></script>
     <script src="/assets/maple-shell.js?v=1" defer></script>
-    <script src="/assets/maplefx.js?v=6" defer></script>
-    <script src="/assets/maple.js?v=5"></script>
+    <script src="/assets/maplefx.js?v=7" defer></script>
+    <script src="/assets/maple-spauth.js?v=1" defer></script>
+    <script src="/assets/maple-player.js?v=8" defer></script>
+    <script src="/assets/maple-header.js?v=2" defer></script>
+    <script src="/assets/maple-studio-x.js?v=5" defer></script>
+    <script src="/assets/maple.js?v=6"></script>
   </head>
   <body>
     <svg class="sprite" aria-hidden="true" focusable="false">

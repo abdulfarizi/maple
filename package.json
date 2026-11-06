@@ -1,0 +1,6 @@
+{
+  "name": "m-id",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" }
+}
